@@ -1,2 +1,2 @@
-Adder:
+Adder:have 3 9bits-wide PE partial sum adder
 PE:00->5bit; 01->3x8bit
