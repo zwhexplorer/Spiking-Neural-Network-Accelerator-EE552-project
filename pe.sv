@@ -24,6 +24,8 @@ module depacketizer_PE(interface packet, out_filter, out_ifmap, addr_out);
 	parameter WIDTH_addr=4;
 	parameter WIDTH_ifmap=5;
 	parameter WIDTH_filter=24;
+	parameter input_type=2'b00;
+	parameter kernel_type=2'b01;
 	parameter FL=2;
 	parameter BL=1;
 	logic [WIDTH-1:0] value;
@@ -35,20 +37,20 @@ module depacketizer_PE(interface packet, out_filter, out_ifmap, addr_out);
 		packet.Receive(value);
 		$display("receive value=%b, Simulation time =%t",value, $time);
 		#FL;
-		if(value[25:24]==2'b00)
+		if(value[WIDTH-9:WIDTH-10]==input_type)
 			begin
-				mapvalue = value[4:0];
+				mapvalue = value[WIDTH-30:0];
 				out_ifmap.Send(mapvalue);
 				$display("send mapvalue=%b, Simulation time =%t",mapvalue, $time);
 			end
-			else if(value[25:24]==2'b01)
+			else if(value[WIDTH-9:WIDTH-10]==kernel_type)
 			begin
-				filvalue = value[23:0];
+				filvalue = value[WIDTH-11:0];
 				out_filter.Send(filvalue);
 				$display("send filvalue=%b, Simulation time =%t",filvalue, $time);
 			end
 		#BL;
-		addr_value=value[29:26];
+		addr_value=value[WIDTH-5:WIDTH-8];
 		addr_out.Send(addr_value);
 		$display("send addr_value=%b, Simulation time =%t",addr_value, $time);
 		#BL;
@@ -57,23 +59,24 @@ endmodule
 
 module ifmap_mem (interface ifmap_in, ifmap_out, to_packet);
 parameter WIDTH=5;
+parameter range=2;
 parameter FL=2;
 parameter BL=1;
 logic sendvalue;
-logic [2:0] i=0, j=0;
+logic [range:0] i=0, j=0;
 logic [WIDTH-1:0] ifmap_value;
 
 always begin
 	ifmap_in.Receive(ifmap_value);
 	$display("receive ifmap_value=%b",ifmap_value);
 	#FL;
-	for(j=0;j<=2;j++)
+	for(j=0;j<=range;j++)
 	begin
-		for(i=j;i<=j+2;i++)
+		for(i=j;i<=j+range;i++)
 		begin
 		sendvalue=ifmap_value[i];
 		ifmap_out.Send(sendvalue);
-		if(j==2) 
+		if(j==range) 
 			to_packet.Send(ifmap_value);
 		$display("send ifmap_value=%b, Simulation time =%t",sendvalue, $time);
 		#BL;
@@ -84,26 +87,28 @@ endmodule
 
 module filter_mem (interface filter_in, count_out, filter_out);
 parameter WIDTH=24;
+parameter WIDTH_UNIT=8;
+parameter range=2;
 parameter FL=2;
 parameter BL=1;
-logic [7:0] sendvalue;
+logic [WIDTH_UNIT-1:0] sendvalue;
 logic [WIDTH-1:0] filter_value;
-logic [2:0] i=0, j=0;
+logic [range:0] i=0, j=0;
 
 always begin
 	filter_in.Receive(filter_value);
 	$display("receive filter_value=%b",filter_value);
 	#FL;
-	for(j=0;j<=2;j++)
+	for(j=0;j<=range;j++)
 	begin
-		for(i=0;i<=2;i++)
+		for(i=0;i<=range;i++)
 		begin
 			if(i==0)
-				sendvalue=filter_value[7:0];
+				sendvalue=filter_value[WIDTH_UNIT-1:0];
 			else if(i==1)
-				sendvalue=filter_value[15:8];
+				sendvalue=filter_value[WIDTH_UNIT+7:WIDTH_UNIT];
 			else
-				sendvalue=filter_value[23:16];
+				sendvalue=filter_value[WIDTH_UNIT+15:WIDTH_UNIT+8];
 			count_out.Send(i);
 			filter_out.Send(sendvalue);
 			$display("filter_send value %b, Simulation time =%t",sendvalue,$time);
@@ -156,14 +161,15 @@ endmodule
 
 module split (interface inPort,count_sel, acc_out, pkt_out);
 	parameter WIDTH = 8;
+	parameter range=2;
 	parameter FL=2;
 	parameter BL=1;
 	logic [WIDTH-1:0]A;
-	logic [2:0] count;
+	logic [range:0] count;
 	
 	always begin
 		count_sel.Receive(count);
-		if(count!=2)
+		if(count!=range)
 		begin
 			inPort.Receive(A);
 			#FL;		
@@ -207,6 +213,14 @@ module packetizer_PE(interface result, ifmap_in, addr_in, packet);
 	parameter WIDTH_addr=4;
 	parameter WIDTH_ifmap=5;
 	parameter WIDTH_filter=24;
+	parameter PE1_addr=4'b0100;
+	parameter PE2_addr=4'b0101;
+	parameter PE3_addr=4'b0001;
+	parameter adder_addr=4'b0110;
+	parameter input_type=2'b00;
+	parameter mem_type=2'b10;
+	parameter long_range_zeros={6{4'b0000}};
+	parameter short_range_zeros={4{4'b0000}};
 	parameter FL=2;
 	parameter BL=1;
 	logic [WIDTH-1:0] packet_value;
@@ -220,19 +234,19 @@ module packetizer_PE(interface result, ifmap_in, addr_in, packet);
 		$display("Start module %m and time is %t", $time);	
 		result.Receive(result_value);
 		#FL;
-		if(addr_value==4'b0100)
+		if(addr_value==PE1_addr)
 			begin
-				packet_value={addr_value,4'b0101,2'b00,{6{4'b0000}},mapvalue};
+				packet_value={addr_value,PE2_addr,input_type,long_range_zeros,mapvalue};
 				packet.Send(packet_value);
 			end
-			else if(addr_value==4'b0101)
+			else if(addr_value==PE2_addr)
 			begin
-				packet_value={addr_value,4'b0001,2'b00,{6{4'b0000}},mapvalue};
+				packet_value={addr_value,PE3_addr,input_type,long_range_zeros,mapvalue};
 				packet.Send(packet_value);
 			end
 		$display("In module %m, packet_value is %b", packet_value);
 		#BL;
-		packet_value={addr_value,4'b0110,2'b10,{4{4'b0000}},result_value};
+		packet_value={addr_value,adder_addr,mem_type,short_range_zeros,result_value};
 		packet.Send(packet_value);
 		$display("In module %m, packet_value is %b", packet_value);
 		#BL;
