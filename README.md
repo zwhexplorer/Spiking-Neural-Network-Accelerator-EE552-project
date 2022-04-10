@@ -1,4 +1,4 @@
-# EE552-project
+# Spiking Neural Network Accelerator-EE552
 Introduction
 
 Motivated by industrial large-scale spiking neural networks TrueNorth and Loihi, we propose as a class project to model and implement a machine learning accelerator using an array of processing elements described using SystemVerilogCSP. Unlike TrueNorth and Loihi, however, we will target more traditional machine learning algorithms (e.g., convolutional neural networks (CNN)) and include a discussion of how CNNs have been mapped to asynchronous Spiking Neural Networks (SNNs). This will focus on the application of this technology in a domain that is quite relevant to today’s chip designers.
