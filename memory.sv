@@ -23,8 +23,7 @@ import SystemVerilogCSP::*;
 //  please check with Matt or Prof. Beerel first, and clearly identify what you changed
 //	why you made the change, and submit the file at the end
 																												
-module memory(Channel read, Channel write, Channel T, 
-	Channel x, Channel y, Channel data_out, Channel data_in); 
+module memory(interface read, write, T, x, y, data_out, data_in); 
   parameter timesteps = 10;
   
   parameter F_ROWS = 3; 

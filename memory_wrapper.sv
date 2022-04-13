@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 import SystemVerilogCSP::*;
 
-module memory_wrapper(toMemRead, toMemWrite, toMemT, toMemX, toMemY, toMemSendData, fromMemGetData, toNOC, fromNOC); 
+module memory_wrapper(interface toMemRead, toMemWrite, toMemT, toMemX, toMemY, toMemSendData, fromMemGetData, toNOC, fromNOC); 
 
 parameter mem_delay = 15;
 parameter simulating_processing_delay = 30;
@@ -74,11 +74,13 @@ parameter DONE=4'b1111;
 				toMemX.Send(i);
 				toMemY.Send(j);
 				//fromMemGetData.Receive(spikeval);
-				if(fromMemGetData.status != idle)
-					fromMemGetData.Receive(spikeval)
+				if(fromMemGetData.status != idle) begin
+					fromMemGetData.Receive(spikeval);
 					ifmapvalue[j]=spikeval;//memory->wrapper send only 1 for input spikes
-				else
+				end
+				else begin
 					ifmapvalue[j]=0;
+				end
 				$display("%m received ifm[%d][%d] = %b",i,j,spikeval);				
 				//#simulating_processing_delay;
 			end // ify
@@ -121,7 +123,7 @@ parameter DONE=4'b1111;
 			for (int j = 0; j < ofy; j++) begin
 				//read old membrane potential
 				if(t>=2) begin
-					toMemRead.Send(read_mempots)
+					toMemRead.Send(read_mempots);
 					toMemX.Send(i);
 					toMemY.Send(j);
 					fromMemGetData.Receive(byteval);
