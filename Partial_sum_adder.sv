@@ -5,7 +5,7 @@ module Partial_sum_adder (
 			interface in,
 			interface out
 				);
-parameter adder_number=2'b00;
+parameter adder_number=2'b00; //00--adder1,01--adder2,10--adder3
 parameter adder3_num=2'b10;
 parameter WIDTH=34;
 parameter memb_p_WIDTH=8;
@@ -62,6 +62,7 @@ end
 //----------------------------------------------------------------------------------------------
 always
 begin
+	//first receive
 	in.Receive(value);//PE1
 	if (value[WIDTH-1:WIDTH-4]==PE1_addr) //src_addr=PE1_addr
 		begin
@@ -69,17 +70,24 @@ begin
 			//flag_PE1_received=1;//count=count+1;
 		end
 	
-	if (value[WIDTH-1:WIDTH-4]==PE2_addr) //PE2
+	if (value[WIDTH-1:WIDTH-4]==PE2_addr) //src_addr=PE2
 		begin
 			partial_PE2=value[7:0];
 			//flag_PE2_received=1//count=count+1;
 		end
-	if (value[WIDTH-1:WIDTH-4]==PE3_addr) //PE3
+	if (value[WIDTH-1:WIDTH-4]==PE3_addr) //src_addr=PE3
 		begin
 			partial_PE3=value[7:0];
 			//flag_PE3_received=1;//count=count+1;
 		end
+	if(value[WIDTH-1:WIDTH-4]==WR_addr)//src addr=WR_addr
+		if(value[WIDTH-9:WIDTH-10]==mem_p_type)//type=mem_p_type
+			begin
+				membrane_potential=value[WIDTH-27:WIDTH-34];
+			end
+	
 		
+	//second receive
 	in.Receive(value);//PE2
 	if (value[WIDTH-1:WIDTH-4]==PE1_addr) //src_addr=PE1_addr
 		begin
@@ -97,7 +105,13 @@ begin
 			partial_PE3=value[7:0];
 			//flag_PE3_received=1;//count=count+1;
 		end
-		
+	if(value[WIDTH-1:WIDTH-4]==WR_addr)//src addr=WR_addr
+		if(value[WIDTH-9:WIDTH-10]==mem_p_type)//type=mem_p_type
+			begin
+				membrane_potential=value[WIDTH-27:WIDTH-34];
+			end
+	
+	//third receive
 	in.Receive(value);//PE3
 	if (value[WIDTH-1:WIDTH-4]==PE1_addr) //src_addr=PE1_addr
 		begin
@@ -116,6 +130,11 @@ begin
 			partial_PE3=value[7:0];
 			//flag_PE3_received=1;//count=count+1;
 		end
+	if(value[WIDTH-1:WIDTH-4]==WR_addr)//src addr=WR_addr
+		if(value[WIDTH-9:WIDTH-10]==mem_p_type)//type=mem_p_type
+			begin
+				membrane_potential=value[WIDTH-27:WIDTH-34];
+			end
 //-----------------------------------------------------------------------------------------------
 
 				//if ((flag_PE1_received==1)&(flag_PE2_received==1)&(flag_PE3_received==1))
@@ -129,9 +148,26 @@ begin
 				else //not caculating first input map
 					begin
 					//need to fetch membrane_potential from memory
-					in.Receive(value);
-					if(value[WIDTH-1:WIDTH-4]==WR_addr)
-							if(value[WIDTH-9:WIDTH-10]==mem_p_type)
+					in.Receive(value);//forth receive
+						if (value[WIDTH-1:WIDTH-4]==PE1_addr) //src_addr=PE1_addr
+							begin
+								artial_PE1=value[7:0];
+								//flag_PE1_received=1;//count=count+1;
+							end
+	
+						if (value[WIDTH-1:WIDTH-4]==PE2_addr) //PE2
+							begin
+								partial_PE2=value[7:0];
+								//flag_PE2_received=1//count=count+1;
+							end
+		
+						if (value[WIDTH-1:WIDTH-4]==PE3_addr) //PE3
+							begin
+								partial_PE3=value[7:0];
+								//flag_PE3_received=1;//count=count+1;
+							end
+						if(value[WIDTH-1:WIDTH-4]==WR_addr)//src addr=WR_addr
+							if(value[WIDTH-9:WIDTH-10]==mem_p_type)//type=mem_p_type
 								begin
 									membrane_potential=value[WIDTH-27:WIDTH-34];
 								end
