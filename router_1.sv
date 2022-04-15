@@ -204,25 +204,6 @@ endmodule
 
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------
-module router_tb 
-	Channel #(.hsProtocol(P4PhaseBD),.WIDTH(34)) intf  [59:20] ();
-	packet_analyser_5         #(.WIDTH(31), .FL(2), .BL(2)) pac_ana(.N_L(N_in), .N_ctrl(intf[50]), .N_R(intf[20]), 
-									.S_L(S_in), .S_ctrl(intf[51]), .S_R(intf[21]), 
-									.E_L(E_in), .E_ctrl(intf[53]), .E_R(intf[23]), 
-									.W_L(W_in), .W_ctrl(intf[52]), .W_R(intf[22]), 
-									.P_L(P_in), .P_ctrl(intf[54]), .P_R(intf[24]));
-	split_5                   #(.WIDTH(31), .FL(2), .BL(2)) splt_N(.L(intf[20]), .Ctrl(intf[50]), .A(intf[25]), .B(intf[26]), .C(intf[27]), .D(intf[28]));
-	split_5                   #(.WIDTH(31), .FL(2), .BL(2)) splt_S(.L(intf[21]), .Ctrl(intf[51]), .A(intf[29]), .B(intf[30]), .C(intf[31]), .D(intf[32]));
-	split_5                   #(.WIDTH(31), .FL(2), .BL(2)) splt_E(.L(intf[23]), .Ctrl(intf[53]), .A(intf[37]), .B(intf[38]), .C(intf[39]), .D(intf[40]));
-	split_5                   #(.WIDTH(31), .FL(2), .BL(2)) splt_W(.L(intf[22]), .Ctrl(intf[52]), .A(intf[33]), .B(intf[34]), .C(intf[35]), .D(intf[36]));
-	split_5                   #(.WIDTH(31), .FL(2), .BL(2)) splt_P(.L(intf[24]), .Ctrl(intf[54]), .A(intf[41]), .B(intf[42]), .C(intf[43]), .D(intf[44]));
-	arbiter_withpacket_5      #(.WIDTH(31), .FL(2), .BL(2)) arbi_N(.A(intf[30]), .B(intf[34]), .C(intf[38]), .D(intf[42]), .R(N_out));
-	arbiter_withpacket_5      #(.WIDTH(31), .FL(2), .BL(2)) arbi_S(.A(intf[26]), .B(intf[33]), .C(intf[40]), .D(intf[43]), .R(S_out));
-	arbiter_withpacket_5      #(.WIDTH(31), .FL(2), .BL(2)) arbi_E(.A(intf[28]), .B(intf[32]), .C(intf[36]), .D(intf[44]), .R(E_out));
-	arbiter_withpacket_5      #(.WIDTH(31), .FL(2), .BL(2)) arbi_W(.A(intf[25]), .B(intf[29]), .C(intf[37]), .D(intf[41]), .R(W_out));
-	arbiter_withpacket_5      #(.WIDTH(31), .FL(2), .BL(2)) arbi_P(.A(intf[27]), .B(intf[31]), .C(intf[35]), .D(intf[39]), .R(P_out));
 
-endmodule
 
 
