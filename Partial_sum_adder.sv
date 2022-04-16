@@ -9,10 +9,10 @@ parameter adder_number=2'b00; //00--adder1,01--adder2,10--adder3
 parameter adder3_num=2'b10;
 parameter WIDTH=34;
 parameter memb_p_WIDTH=8;
-parameter threshold=10;
-parameter PE1_addr=4'b0100;
-parameter PE2_addr=4'b0101;
-parameter PE3_addr=4'b0001;
+parameter threshold=64;
+parameter PE1_addr=4'b1000;
+parameter PE2_addr=4'b1001;
+parameter PE3_addr=4'b1010;
 parameter Adder_addr=4'b0110;
 parameter Mem_addr=4'b0000;
 parameter WR_addr=4'b0001;
@@ -137,21 +137,15 @@ begin
 			end
 //-----------------------------------------------------------------------------------------------
 
-				//if ((flag_PE1_received==1)&(flag_PE2_received==1)&(flag_PE3_received==1))
+				
 				//begin
 				//generate membrane potential 8-bit
-				if (first_time==0) //fist input map
+				if (first_time==1) //not caculating first input map
 					begin
-						membrane_potential=partial_PE1+partial_PE2+partial_PE3;
-						
-					end
-				else //not caculating first input map
-					begin
-					//need to fetch membrane_potential from memory
 					in.Receive(value);//forth receive
 						if (value[WIDTH-1:WIDTH-4]==PE1_addr) //src_addr=PE1_addr
 							begin
-								artial_PE1=value[7:0];
+								partial_PE1=value[7:0];
 								//flag_PE1_received=1;//count=count+1;
 							end
 	
@@ -172,6 +166,11 @@ begin
 									membrane_potential=value[WIDTH-27:WIDTH-34];
 								end
 					membrane_potential=partial_PE1+partial_PE2+partial_PE3+membrane_potential;
+					end						
+						
+				else //first input map
+					begin
+						membrane_potential=partial_PE1+partial_PE2+partial_PE3;
 					end
 					
 						//generate output_spike 1-bit
@@ -186,13 +185,24 @@ begin
 					end
 			
 				
-				out_packet={Adder_addr,Mem_addr,MP_to_Mem_zeros,membrane_potential};//4+4+18*zeros+8bits
+				out_packet={Adder_addr,Mem_addr,mem_p_type,MP_to_Mem_zeros,membrane_potential};
+				$display("Membrane_P after compare%b",out_packet);
+				//4+4+2+16*zeros+8bits
+				//mem_p_type=10
 				out.Send(out_packet);	
 				if (output_spike==1)
 					begin
 						output_spike_addr={adder_number,count};//row-col
-						out_packet={Adder_addr,Mem_addr,mem_p_type,Out_to_Mem_zeros,output_spike_addr};//4+4+22+4
+						out_packet={Adder_addr,Mem_addr,output_spike_type,Out_to_Mem_zeros,output_spike_addr};//4+4+22+4
+						//output_spike_type=10
+						$display("output_spike no_zero_send:%b",out_packet);
 						out.Send(out_packet);
+					end
+				if (adder_number==adder3_num)//every time when adder3 finish calculating, send done_singal
+					begin
+						output_spike_addr=done_singal;
+						out_packet={Adder_addr,Mem_addr,output_spike_type,Out_to_Mem_zeros,output_spike_addr};
+						out.Send(out_packet);//send done_singal
 					end
 				/***if (count==count_number)//count=2'b10
 					begin
@@ -200,18 +210,19 @@ begin
 						out_packet={Adder_addr,Mem_addr,output_spike_type,Out_to_Mem_zeros,output_spike_addr};
 					end
 					***/
-					if (adder_number==adder3_num)
-						begin
-						output_spike_addr=done_singal;
-						out_packet={Adder_addr,Mem_addr,output_spike_type,Out_to_Mem_zeros,output_spike_addr};
-						out.Send(out_packet);						
-						end
+					//if (adder_number==adder3_num)
+						//begin
+						//output_spike_addr=done_singal;
+						//out_packet={Adder_addr,Mem_addr,output_spike_type,Out_to_Mem_zeros,output_spike_addr};
+						//out.Send(out_packet);						
+						//end
 				count=count+1;
 				if (count>count_number)//count=3;
 					begin
 						count=0;
 						first_time=1;
 					end
+					#10;
 				
 	/***
 	out_packet={Adder_addr,PE1_addr,to_PE_zeros,count};//feedback to PE1
