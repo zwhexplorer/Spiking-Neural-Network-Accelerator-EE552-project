@@ -17,24 +17,24 @@ module depacketizer_PE(interface packet, out_filter, out_ifmap, addr_out);
 	
 	always begin
 		packet.Receive(value);
-		$display("receive value=%b, Simulation time =%t",value, $time);
+		$display("In %m, receive value=%b, Simulation time =%t",value, $time);
 		#FL;
 		if(value[WIDTH-9:WIDTH-10]==input_type)
 			begin
 				mapvalue = value[WIDTH-30:0];
 				out_ifmap.Send(mapvalue);
-				$display("send mapvalue=%b, Simulation time =%t",mapvalue, $time);
+				$display("In %m send mapvalue=%b, Simulation time =%t",mapvalue, $time);
 			end
 			else if(value[WIDTH-9:WIDTH-10]==kernel_type)
 			begin
 				filvalue = value[WIDTH-11:0];
 				out_filter.Send(filvalue);
-				$display("send filvalue=%b, Simulation time =%t",filvalue, $time);
+				$display("In %m send filvalue=%b, Simulation time =%t",filvalue, $time);
 			end
 		#BL;
 		addr_value=value[WIDTH-5:WIDTH-8];
 		addr_out.Send(addr_value);
-		$display("send addr_value=%b, Simulation time =%t",addr_value, $time);
+		$display("In %m send addr_value=%b, Simulation time =%t",addr_value, $time);
 		#BL;
 	end
 endmodule
@@ -50,7 +50,7 @@ logic [WIDTH-1:0] ifmap_value;
 
 always begin
 	ifmap_in.Receive(ifmap_value);
-	$display("receive ifmap_value=%b",ifmap_value);
+	$display("In %m receive ifmap_value=%b",ifmap_value);
 	#FL;
 	for(j=0;j<=range;j++)
 	begin
@@ -60,7 +60,7 @@ always begin
 		ifmap_out.Send(sendvalue);
 		if(j==range) 
 			to_packet.Send(ifmap_value);
-		$display("send ifmap_value=%b, Simulation time =%t",sendvalue, $time);
+		$display("In %m send ifmap_value=%b, Simulation time =%t",sendvalue, $time);
 		#BL;
 		end	
 		ifmap_count.Send(j);
@@ -80,7 +80,7 @@ logic [range:0] i=0, j=0;
 
 always begin
 	filter_in.Receive(filter_value);
-	$display("receive filter_value=%b",filter_value);
+	$display("In %m receive filter_value=%b",filter_value);
 	#FL;
 	for(j=0;j<=range;j++)
 	begin
@@ -94,7 +94,7 @@ always begin
 				sendvalue=filter_value[WIDTH_UNIT+15:WIDTH_UNIT+8];
 			count_out.Send(i);
 			filter_out.Send(sendvalue);
-			$display("filter_send value %b, Simulation time =%t",sendvalue,$time);
+			$display("In %m filter_send value %b, Simulation time =%t",sendvalue,$time);
 			#BL;
 		end
 	end
@@ -116,7 +116,7 @@ always begin
 	join
 	#FL;
 	multi_out_value=filter_value*ifmap_value;
-	$display("multi_out_value = %b ", multi_out_value);
+	$display("In %m multi_out_value = %b ", multi_out_value);
 	multi_out.Send(multi_out_value);
 	#BL;
 	end
@@ -136,7 +136,7 @@ module adder(interface a0, b0, sum);
 		a0.Receive(a);	
 		#FL;	
 		s=a+b;
-		$display("SumValue_S =%d. time is %t", s, $time);
+		$display("In %m SumValue_S =%d. time is %t", s, $time);
 		sum.Send(s);
 		#BL;										
 	end
@@ -164,7 +164,7 @@ module split (interface inPort,count_sel, acc_out, pkt_out);
 			inPort.Receive(A);
 			#FL;
 			pkt_out.Send(A);
-			$display("sum_out%d at %t",A, $time);
+			$display("In %m sum_out%d at %t",A, $time);
 			acc_out.Send(0);
 			#BL;
 		end
@@ -179,24 +179,24 @@ module accumulator(interface I, O);
   
   initial begin
   	O.Send(0);
-	$display("send accumulated value 0 at %t", $time);
+//	$display("send accumulated value 0 at %t", $time);
 	#BL;
   end
   always begin
 	I.Receive(token);
 	#FL;
 	O.Send(token);
-	$display("send accumulated value = %d", token);
+	$display("In %m send accumulated value = %d", token);
 	#BL;
   end
 endmodule
 
 module packetizer_PE(interface result, ifmap_in, ifmap_count, addr_in, packet);
 	parameter WIDTH=34, WIDTH_addr=4, WIDTH_ifmap=5, WIDTH_mem=8;
-	parameter PE1_addr=4'b0100, PE2_addr=4'b0101, PE3_addr=4'b0110;
-	parameter adder1_addr=4'b1000, adder2_addr=4'b1001, adder3_addr=4'b1010;
+	parameter PE1_addr=4'b0010, PE2_addr=4'b0110, PE3_addr=4'b1010;
+	parameter adder1_addr=4'b0001, adder2_addr=4'b0101, adder3_addr=4'b1001;
 	parameter input_type=2'b00, mem_type=2'b10;
-	parameter long_range_zeros={6{4'b0000}};
+	parameter long_range_zeros={{6{3'b000}}, 1'b0};
 	parameter short_range_zeros={4{4'b0000}};
 	parameter FL=2;
 	parameter BL=1;
@@ -247,11 +247,11 @@ module pe(interface packet_in, packet_out);
 	 
 	 depacketizer_PE #(.FL(2), .BL(1)) dpkt(.packet(packet_in), .out_filter(intf[1]), .out_ifmap(intf[2]), .addr_out(intf[3]));
 	 filter_mem #(.FL(2),.BL(1)) FM (.filter_in(intf[1]),.count_out(intf[4]),.filter_out(intf[5]));
-	 ifmap_mem #(.FL(2),.BL(1)) IM (.ifmap_in(intf[2]), .ifmap_out(intf[6]), .to_packet(intf[7]), ifmap_count(intf[13]));
+	 ifmap_mem #(.FL(2),.BL(1)) IM (.ifmap_in(intf[2]), .ifmap_out(intf[6]), .to_packet(intf[7]), .ifmap_count(intf[13]));
 	 Multiplier #(.FL(2), .BL(1)) mul(.filter_in(intf[5]), .ifmap_in(intf[6]), .multi_out(intf[8]));
 	 adder 	    #(.FL(2), .BL(1)) add(.a0(intf[8]), .b0(intf[9]), .sum(intf[10]));
 	 split      #(.FL(2), .BL(1)) spl(.inPort(intf[10]), .count_sel(intf[4]), .acc_out(intf[11]), .pkt_out(intf[12]));
 	 accumulator #(.FL(2),.BL(1)) acc (.I(intf[11]), .O(intf[9]));
-	 packetizer_PE #(.FL(2), .BL(1)) pkt(.result(intf[12]), .ifmap_in(intf[7]), ifmap_count(intf[13]) .addr_in(intf[3]), .packet(packet_out));
+	 packetizer_PE #(.FL(2), .BL(1)) pkt(.result(intf[12]), .ifmap_in(intf[7]), .ifmap_count(intf[13]), .addr_in(intf[3]), .packet(packet_out));
 	 
 endmodule
