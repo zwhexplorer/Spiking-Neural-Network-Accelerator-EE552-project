@@ -14,7 +14,7 @@ parameter PE1_addr=4'b1000;
 parameter PE2_addr=4'b1001;
 parameter PE3_addr=4'b1010;
 parameter Adder_addr=4'b0110;
-parameter Mem_addr=4'b0000;
+parameter Mem_addr=4'b0100;
 parameter WR_addr=4'b0001;
 parameter Out_to_Mem_zeros={20{1'b0}};
 parameter MP_to_Mem_zeros={16{1'b0}};
@@ -186,7 +186,7 @@ begin
 			
 				
 				out_packet={Adder_addr,Mem_addr,mem_p_type,MP_to_Mem_zeros,membrane_potential};
-				$display("Membrane_P after compare%b",out_packet);
+				$display("add_num:%m---Membrane_P after compare%b",out_packet);
 				//4+4+2+16*zeros+8bits
 				//mem_p_type=10
 				out.Send(out_packet);	
@@ -195,7 +195,7 @@ begin
 						output_spike_addr={adder_number,count};//row-col
 						out_packet={Adder_addr,Mem_addr,output_spike_type,Out_to_Mem_zeros,output_spike_addr};//4+4+22+4
 						//output_spike_type=10
-						$display("output_spike no_zero_send:%b",out_packet);
+						$display("add_num:%m---output_spike no_zero_send:%b",out_packet);
 						out.Send(out_packet);
 					end
 				if (adder_number==adder3_num)//every time when adder3 finish calculating, send done_singal
@@ -203,6 +203,7 @@ begin
 						output_spike_addr=done_singal;
 						out_packet={Adder_addr,Mem_addr,output_spike_type,Out_to_Mem_zeros,output_spike_addr};
 						out.Send(out_packet);//send done_singal
+						$display("add_num:%m---Done signal Sent!!!");
 					end
 				/***if (count==count_number)//count=2'b10
 					begin
