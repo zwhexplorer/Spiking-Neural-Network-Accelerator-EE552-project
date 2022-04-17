@@ -61,8 +61,8 @@ module memory(interface read, write, T, x, y, data_out, data_in);
 		for (ofj = 0; ofj < OF_COLS; ofj++) begin
 			index = OF_COLS * ofi + ofj;		
 			golden_of_mem[ofi][ofj] = pre_golden_memory[index];
-//			$display("%m pre_golden_mem[%h] = %b",index, pre_golden_memory[index]);
-//			$display("%m golden_mem[%h][%h] = %b\n", ofi, ofj, golden_of_mem[ofi][ofj]);				
+			$display("%m pre_golden_mem[%h] = %b",index, pre_golden_memory[index]);
+			$display("%m golden_mem[%h][%h] = %b\n", ofi, ofj, golden_of_mem[ofi][ofj]);				
 		end // fj fors
 	  end // fi for	 
 
@@ -74,8 +74,8 @@ module memory(interface read, write, T, x, y, data_out, data_in);
 		for (fj = 0; fj < F_COLS; fj++) begin
 			index = F_COLS * fi + fj;		
 			filter_mem[fi][fj] = pre_filt_memory[index];
-//			$display("%m pre_filt_mem[%h] = %d",index, pre_filt_memory[index]);
-//			$display("%m filter_mem[%h][%h] = %d\n", fi, fj, filter_mem[fi][fj]);				
+			$display("%m pre_filt_mem[%h] = %d",index, pre_filt_memory[index]);
+			$display("%m filter_mem[%h][%h] = %d\n", fi, fj, filter_mem[fi][fj]);				
 		end // fj fors
 	  end // fi for	 
 	  
@@ -87,8 +87,8 @@ module memory(interface read, write, T, x, y, data_out, data_in);
 			  for (ifj = 0; ifj < IF_COLS;++ifj) begin 
 					index = (IF_ROWS*IF_COLS)*ift + IF_COLS*ifi + ifj;
 					if_mem[ift][ifi][ifj] = pre_ifmaps_mem[index];
-//					$display("%m pre_ifmaps_mem[%d] = %b",index, pre_ifmaps_mem[index]);
-//					$display("%m if_mem[%d][%d][%d] = %b\n", ift,ifi,ifj, if_mem[ift][ifi][ifj]);
+					$display("%m pre_ifmaps_mem[%d] = %b",index, pre_ifmaps_mem[index]);
+					$display("%m if_mem[%d][%d][%d] = %b\n", ift,ifi,ifj, if_mem[ift][ifi][ifj]);
 			  end // col-wise loop
 //				$display("%m End of row %d",ifi);
 		  end // row-wise loop	  
@@ -157,7 +157,7 @@ module memory(interface read, write, T, x, y, data_out, data_in);
 					data_in.Receive(mem_pot_val);
 					V_pot_mem[row][col] = mem_pot_val;
 				end
-				else if (rtype == 1) begin // user wants to write output spikes
+				else if (wtype == 1) begin // user wants to write output spikes
 					if (row >= OF_ROWS | col >= OF_COLS) begin
 						$display("%m writing beyond the edge of output spike array");
 					end
@@ -165,7 +165,7 @@ module memory(interface read, write, T, x, y, data_out, data_in);
 					of_mem[t][row][col] = 1;//adder -> wrapper send only 1 for output spike
 				end
 				else begin
-					$display("%m request to read from an unknown memory");
+					$display("%m request to write from an unknown memory");
 				end
 			end // \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ end child process 2
 			

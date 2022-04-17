@@ -197,5 +197,12 @@ pe pe1(.packet_in(intf[41]),.packet_out(intf[42]));
 pe pe2(.packet_in(intf[45]),.packet_out(intf[46]));
 pe pe3(.packet_in(intf[47]),.packet_out(intf[48]));
 
+initial begin
+#1500;
+$stop;
+
+
+end
+endmodule
 
 

@@ -193,8 +193,8 @@ endmodule
 
 module packetizer_PE(interface result, ifmap_in, ifmap_count, addr_in, packet);
 	parameter WIDTH=34, WIDTH_addr=4, WIDTH_ifmap=5, WIDTH_mem=8;
-	parameter PE1_addr=4'b0100, PE2_addr=4'b0101, PE3_addr=4'b0110;
-	parameter adder1_addr=4'b1000, adder2_addr=4'b1001, adder3_addr=4'b1010;
+	parameter PE1_addr=4'b0010, PE2_addr=4'b0110, PE3_addr=4'b1010;
+	parameter adder1_addr=4'b0001, adder2_addr=4'b0101, adder3_addr=4'b1001;
 	parameter input_type=2'b00, mem_type=2'b10;
 	parameter long_range_zeros={6{4'b0000}};
 	parameter short_range_zeros={4{4'b0000}};
@@ -247,11 +247,11 @@ module pe(interface packet_in, packet_out);
 	 
 	 depacketizer_PE #(.FL(2), .BL(1)) dpkt(.packet(packet_in), .out_filter(intf[1]), .out_ifmap(intf[2]), .addr_out(intf[3]));
 	 filter_mem #(.FL(2),.BL(1)) FM (.filter_in(intf[1]),.count_out(intf[4]),.filter_out(intf[5]));
-	 ifmap_mem #(.FL(2),.BL(1)) IM (.ifmap_in(intf[2]), .ifmap_out(intf[6]), .to_packet(intf[7]), ifmap_count(intf[13]));
+	 ifmap_mem #(.FL(2),.BL(1)) IM (.ifmap_in(intf[2]), .ifmap_out(intf[6]), .to_packet(intf[7]), .ifmap_count(intf[13]));
 	 Multiplier #(.FL(2), .BL(1)) mul(.filter_in(intf[5]), .ifmap_in(intf[6]), .multi_out(intf[8]));
 	 adder 	    #(.FL(2), .BL(1)) add(.a0(intf[8]), .b0(intf[9]), .sum(intf[10]));
 	 split      #(.FL(2), .BL(1)) spl(.inPort(intf[10]), .count_sel(intf[4]), .acc_out(intf[11]), .pkt_out(intf[12]));
 	 accumulator #(.FL(2),.BL(1)) acc (.I(intf[11]), .O(intf[9]));
-	 packetizer_PE #(.FL(2), .BL(1)) pkt(.result(intf[12]), .ifmap_in(intf[7]), ifmap_count(intf[13]) .addr_in(intf[3]), .packet(packet_out));
+	 packetizer_PE #(.FL(2), .BL(1)) pkt(.result(intf[12]), .ifmap_in(intf[7]), .ifmap_count(intf[13]), .addr_in(intf[3]), .packet(packet_out));
 	 
 endmodule

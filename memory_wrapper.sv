@@ -9,8 +9,8 @@ parameter timesteps = 10;
 parameter WIDTH = 8;
 parameter WIDTH_NOC=34;
 parameter WIDTH_ifmap=5, WIDTH_filter=24;
-parameter PE1_addr=4'b0100, PE2_addr=4'b0101, PE3_addr=4'b0110;
-parameter wrapper_addr=4'b0001, adder1_addr=4'b1000, adder2_addr=4'b1001, adder3_addr=4'b1010;
+parameter PE1_addr=4'b0010, PE2_addr=4'b0110, PE3_addr=4'b1010;
+parameter wrapper_addr=4'b0100, adder1_addr=4'b0001, adder2_addr=4'b0101, adder3_addr=4'b1001;
 parameter input_type=2'b00, kernel_type=2'b01, mem_type=2'b10;
 parameter long_range_zeros={6{4'b0000}}, short_range_zeros={4{4'b0000}};
 parameter DONE=4'b1111;
@@ -60,6 +60,7 @@ parameter DONE=4'b1111;
 			2: nocval={wrapper_addr, PE3_addr, kernel_type, filterval};
 		endcase
 		toNOC.Send(nocval);
+		$display("%m toNOC send is %b in %t", nocval, $time);
 	end
    $display("%m Received all filters at time %d", $time);
     for (int t = 1; t <= timesteps; t++) begin
@@ -97,6 +98,7 @@ parameter DONE=4'b1111;
 				end*/
 			endcase
 			toNOC.Send(nocval);
+			$display("%m toNOC send is %b in %t", nocval, $time);
 		end // ifx
 	$display("%m received all ifmaps for timestep t = %d at time = %d",t,$time);
 		//read old membrane potential
@@ -133,6 +135,7 @@ parameter DONE=4'b1111;
 						2: nocval={wrapper_addr, adder3_addr,mem_type, short_range_zeros, byteval};
 					endcase
 					toNOC.Send(nocval);
+					$display("%m toNOC send is %b in %t", nocval, $time);
 				end
 				fromNOC.Receive(nocval);
 				//send membrane potential and output spikes
@@ -164,6 +167,7 @@ parameter DONE=4'b1111;
 						#mem_delay; // wait for them to arrive
 						nocval={wrapper_addr, PE3_addr, input_type, long_range_zeros, ifmapvalue};
 						toNOC.Send(nocval);
+						$display("%m toNOC send is %b in %t", nocval, $time);
 					end
 					break;
 				end
