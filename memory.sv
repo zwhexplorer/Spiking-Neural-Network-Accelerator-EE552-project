@@ -128,9 +128,9 @@ module memory(interface read, write, T, x, y, data_out, data_in);
 					if (row >= IF_ROWS | col >= IF_COLS) begin
 						$display("%m reading beyond the edge of input spike array");
 					end
-					if(if_mem[t][row][col]==1) begin //memory->wrapper send only 1 for input spike
+					//if(if_mem[t][row][col]==1) begin //memory->wrapper send only 1 for input spike
 						data_out.Send(if_mem[t][row][col]);	
-					end
+					//end
 				end
 				else if (rtype == 2) begin // user wants filters
 					if (row >= F_ROWS | col >= F_COLS) begin
@@ -157,7 +157,7 @@ module memory(interface read, write, T, x, y, data_out, data_in);
 					data_in.Receive(mem_pot_val);
 					V_pot_mem[row][col] = mem_pot_val;
 				end
-				else if (rtype == 1) begin // user wants to write output spikes
+				else if (wtype == 1) begin // user wants to write output spikes
 					if (row >= OF_ROWS | col >= OF_COLS) begin
 						$display("%m writing beyond the edge of output spike array");
 					end
@@ -165,7 +165,7 @@ module memory(interface read, write, T, x, y, data_out, data_in);
 					of_mem[t][row][col] = 1;//adder -> wrapper send only 1 for output spike
 				end
 				else begin
-					$display("%m request to read from an unknown memory");
+					$display("%m request to write from an unknown memory");
 				end
 			end // \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ end child process 2
 			

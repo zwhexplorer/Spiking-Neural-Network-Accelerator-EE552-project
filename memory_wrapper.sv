@@ -9,10 +9,10 @@ parameter timesteps = 10;
 parameter WIDTH = 8;
 parameter WIDTH_NOC=34;
 parameter WIDTH_ifmap=5, WIDTH_filter=24;
-parameter PE1_addr=4'b0100, PE2_addr=4'b0101, PE3_addr=4'b0110;
-parameter wrapper_addr=4'b0001, adder1_addr=4'b1000, adder2_addr=4'b1001, adder3_addr=4'b1010;
+parameter PE1_addr=4'b0010, PE2_addr=4'b0110, PE3_addr=4'b1010;
+parameter wrapper_addr=4'b0100, adder1_addr=4'b0001, adder2_addr=4'b0101, adder3_addr=4'b1001;
 parameter input_type=2'b00, kernel_type=2'b01, mem_type=2'b10;
-parameter long_range_zeros={6{4'b0000}}, short_range_zeros={4{4'b0000}};
+parameter long_range_zeros={{6{3'b000}}, 1'b0}, short_range_zeros={4{4'b0000}};
 parameter DONE=4'b1111;
 
   //Channel #(.hsProtocol(P4PhaseBD)) intf[9:0] (); 
@@ -30,6 +30,7 @@ parameter DONE=4'b1111;
   int write_ofmaps = 1;
   int write_mempots = 0;
   logic [WIDTH-1:0] byteval;
+  logic [WIDTH-1:0] by1, by2, by3;
   logic [WIDTH_NOC-1:0] nocval;
   logic [WIDTH_ifmap-1:0] ifmapvalue;
   logic [WIDTH_filter-1:0] filterval;
@@ -40,33 +41,35 @@ parameter DONE=4'b1111;
 // TO DO: decide whether each Send(*)/Receive(*) is correct, or just a placeholder
   initial begin
 	for (int i = 0; i < num_filts_x; i++) begin
-		for (int j = 0; j < num_filts_y; ++j) begin
+		for (int j = 0; j < num_filts_y; j++) begin
 			$display("%m Requesting filter [%d][%d] at time %d",i,j,$time);
 			toMemRead.Send(read_filts);
 			toMemX.Send(i);
 			toMemY.Send(j);
 			fromMemGetData.Receive(byteval);
 			case(j)
-			0:filterval[WIDTH_filter-17:0]=byteval;
-			1:filterval[WIDTH_filter-9:WIDTH-16]=byteval;
-			2:filterval[WIDTH_filter-1:WIDTH_filter-8]=byteval;
+			0:by1=byteval;
+			1:by2=byteval;
+			2:by3=byteval;
 			endcase
 			$display("%m Received filter[%d][%d] = %d at time %d",i,j,byteval,$time);
 		end
 		#mem_delay;
+		filterval={by3, by2, by1};
 		case(i)
 			0: nocval={wrapper_addr, PE1_addr, kernel_type, filterval};
 			1: nocval={wrapper_addr, PE2_addr, kernel_type, filterval};
 			2: nocval={wrapper_addr, PE3_addr, kernel_type, filterval};
 		endcase
 		toNOC.Send(nocval);
+		$display("%m toNOC send is %b in %t", nocval, $time);
 	end
    $display("%m Received all filters at time %d", $time);
     for (int t = 1; t <= timesteps; t++) begin
 	$display("%m beginning timestep t = %d at time = %d",t,$time);
 		// get the new ifmaps
 		for (int i = 0; i < ifx-2; i++) begin
-			for (int j = 0; j < ify; ++j) begin
+			for (int j = 0; j < ify; j++) begin
 				// TO DO: read old membrane potential (hint: you can't do it here...)
 				$display("%m requesting ifm[%d][%d]",i,j);
 				// request the input spikes
@@ -74,13 +77,13 @@ parameter DONE=4'b1111;
 				toMemX.Send(i);
 				toMemY.Send(j);
 				//fromMemGetData.Receive(spikeval);
-				if(fromMemGetData.status != idle) begin
-					fromMemGetData.Receive(spikeval);
-					ifmapvalue[j]=spikeval;//memory->wrapper send only 1 for input spikes
-				end
-				else begin
-					ifmapvalue[j]=0;
-				end
+				//if(fromMemGetData.status != idle) begin
+				fromMemGetData.Receive(spikeval);
+				ifmapvalue[j]=spikeval;//memory->wrapper send only 1 for input spikes
+				//end
+				//else begin
+				//	ifmapvalue[j]=0;
+				//end
 				$display("%m received ifm[%d][%d] = %b",i,j,spikeval);				
 				//#simulating_processing_delay;
 			end // ify
@@ -97,6 +100,7 @@ parameter DONE=4'b1111;
 				end*/
 			endcase
 			toNOC.Send(nocval);
+			$display("%m toNOC send is %b in %t", nocval, $time);
 		end // ifx
 	$display("%m received all ifmaps for timestep t = %d at time = %d",t,$time);
 		//read old membrane potential
@@ -133,6 +137,7 @@ parameter DONE=4'b1111;
 						2: nocval={wrapper_addr, adder3_addr,mem_type, short_range_zeros, byteval};
 					endcase
 					toNOC.Send(nocval);
+					$display("%m toNOC send is %b in %t", nocval, $time);
 				end
 				fromNOC.Receive(nocval);
 				//send membrane potential and output spikes
@@ -164,6 +169,7 @@ parameter DONE=4'b1111;
 						#mem_delay; // wait for them to arrive
 						nocval={wrapper_addr, PE3_addr, input_type, long_range_zeros, ifmapvalue};
 						toNOC.Send(nocval);
+						$display("%m toNOC send is %b in %t", nocval, $time);
 					end
 					break;
 				end
