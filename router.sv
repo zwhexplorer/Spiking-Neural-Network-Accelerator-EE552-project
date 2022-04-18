@@ -23,34 +23,34 @@ logic [WIDTH-1:0]packet_Nin, packet_Sin, packet_Ein, packet_Win, packet_Pin;
 //packet comes from NORTH
 always begin
 	N_L.Receive(packet_Nin); #FL;
-	//$display("1. NORTH receive packetN(%b)",packet_Nin);
+	$display("router_num:%m---1. NORTH receive packetN(%b)",packet_Nin);
 	fork
 	Xsour_Nin = packet_Nin[WIDTH-1:WIDTH-2];
 	Ysour_Nin = packet_Nin[WIDTH-3:WIDTH-4];
 	Xdest_Nin = packet_Nin[WIDTH-5:WIDTH-6];
 	Ydest_Nin = packet_Nin[WIDTH-7:WIDTH-8];
 	join
-	//$display("1. The router address is %b%b",Xaddr,Yaddr);
-	//$display("1. packetN destination address is %b%b",Xdest_Nin,Ydest_Nin);
+	$display("router_num:%m---1. The router address is %b%b",Xaddr,Yaddr);
+	$display("router_num:%m---1. packetN destination address is %b%b",Xdest_Nin,Ydest_Nin);
 	if (Xdest_Nin==Xaddr & Ydest_Nin==Yaddr) 
 		begin 
 		N_ctrl.Send(10); 
-		//$display("1. packetN should send from NORTH to PE"); 
+		$display("router_num:%m---1. packetN should send from NORTH to PE"); 
 		end
 	else if (Xdest_Nin > Xaddr)            
 		begin 
 		N_ctrl.Send(11);  
-		//$display("1. packetN should send from NORTH to EAST");
+		$display("router_num:%m---1. packetN should send from NORTH to EAST");
 		end
 	else if (Xdest_Nin < Xaddr)           
 		begin 
 		N_ctrl.Send(00); 
-		//$display("1. packetN should send from NORTH to WEST");
+		$display("router_num:%m---1. packetN should send from NORTH to WEST");
 		end
 	else if (Ydest_Nin > Yaddr)           
 		begin 
 		N_ctrl.Send(01); 
-		//$display("1. packetN should send from NORTH to SOUTH");
+		$display("router_num:%m---1. packetN should send from NORTH to SOUTH");
 		end
 	N_R.Send(packet_Nin); #BL;
 end
@@ -59,34 +59,34 @@ end
 //packet comes from SOUTH
 always begin
 	S_L.Receive(packet_Sin); #FL;
-	//$display("2. SOUTH receive packetS(%b)",packet_Sin);
+	$display("router_num:%m---2. SOUTH receive packetS(%b)",packet_Sin);
 	fork
 	Xsour_Sin = packet_Sin[WIDTH-1:WIDTH-2];
 	Ysour_Sin = packet_Sin[WIDTH-3:WIDTH-4];
 	Xdest_Sin = packet_Sin[WIDTH-5:WIDTH-6];
 	Ydest_Sin = packet_Sin[WIDTH-7:WIDTH-8];
 	join
-	//$display("2. The router address is %b%b",Xaddr,Yaddr);
-	//$display("2. packetS destination address is %b%b",Xdest_Sin,Ydest_Sin);
+	$display("router_num:%m---2. The router address is %b%b",Xaddr,Yaddr);
+	$display("router_num:%m---2. packetS destination address is %b%b",Xdest_Sin,Ydest_Sin);
 	if (Xdest_Sin==Xaddr & Ydest_Sin==Yaddr) 
 		begin
 		S_ctrl.Send(10); 
-		//$display("2. packetS should send from SOUTH to PE"); 
+		$display("router_num:%m---2. packetS should send from SOUTH to PE"); 
 		end
 	else if (Xdest_Sin > Xaddr)            
 		begin
 		S_ctrl.Send(11);
-		//$display("2. packetS should send from SOUTH to EAST"); 
+		$display("router_num:%m---2. packetS should send from SOUTH to EAST"); 
 		end
 	else if (Xdest_Sin < Xaddr)            
 		begin
 		S_ctrl.Send(00);
-		//$display("2. packetS should send from SOUTH to WEST"); 
+		$display("router_num:%m---2. packetS should send from SOUTH to WEST"); 
 		end
 	else if (Ydest_Sin < Yaddr)            
 		begin
 		S_ctrl.Send(01);
-		//$display("2. packetS should send from SOUTH to NORTH"); 
+		$display("router_num:%m---2. packetS should send from SOUTH to NORTH"); 
 		end
 	S_R.Send(packet_Sin); #BL;
 end
@@ -95,34 +95,34 @@ end
 //packet comes from EAST
 always begin
 	E_L.Receive(packet_Ein); #FL;
-	//$display("3. EAST receive packetE(%b)",packet_Ein);
+	$display("router_num:%m---3. EAST receive packetE(%b)",packet_Ein);
 	fork
 	Xsour_Ein = packet_Ein[WIDTH-1:WIDTH-2];
 	Ysour_Ein = packet_Ein[WIDTH-3:WIDTH-4];
 	Xdest_Ein = packet_Ein[WIDTH-5:WIDTH-6];
 	Ydest_Ein = packet_Ein[WIDTH-7:WIDTH-8];
 	join
-	//$display("3. The router address is %b%b",Xaddr,Yaddr);
-	//$display("3. packetE destination address is %b%b",Xdest_Ein,Ydest_Ein);
+	$display("router_num:%m---3. The router address is %b%b",Xaddr,Yaddr);
+	$display("router_num:%m---3. packetE destination address is %b%b",Xdest_Ein,Ydest_Ein);
 	if (Xdest_Ein==Xaddr & Ydest_Ein==Yaddr) 
 		begin
 		E_ctrl.Send(10);
-		//$display("3. packetE should send from EAST to PE"); 
+		$display("router_num:%m---3. packetE should send from EAST to PE"); 
 		end
 	else if (Xdest_Ein < Xaddr)            
 		begin
 		E_ctrl.Send(00);
-		//$display("3. packetE should send from EAST to WEST"); 
+		$display("router_num:%m---3. packetE should send from EAST to WEST"); 
 		end
 	else if (Ydest_Ein > Yaddr)            
 		begin
 		E_ctrl.Send(11);
-		//$display("3. packetE should send from EAST to SOUTH"); 
+		$display("router_num:%m---3. packetE should send from EAST to SOUTH"); 
 		end
 	else if (Ydest_Ein < Yaddr)            
 		begin
 		E_ctrl.Send(01);
-		//$display("3. packetE should send from EAST to NORTH"); 
+		$display("router_num:%m---3. packetE should send from EAST to NORTH"); 
 		end
 	E_R.Send(packet_Ein); #BL;
 end
@@ -131,34 +131,34 @@ end
 //packet comes from WEST
 always begin
 	W_L.Receive(packet_Win); #FL;
-	//$display("4. WEST receive packetW(%b)",packet_Win);
+	$display("router_num:%m---4. WEST receive packetW(%b)",packet_Win);
 	fork
 	Xsour_Win = packet_Win[WIDTH-1:WIDTH-2];
 	Ysour_Win = packet_Win[WIDTH-3:WIDTH-4];
 	Xdest_Win = packet_Win[WIDTH-5:WIDTH-6];
 	Ydest_Win = packet_Win[WIDTH-7:WIDTH-8];
 	join
-	//$display("4. The router address is %b%b",Xaddr,Yaddr);
-	//$display("4. packetW destination address is %b%b",Xdest_Win,Ydest_Win);
+	$display("router_num:%m---4. The router address is %b%b",Xaddr,Yaddr);
+	$display("router_num:%m---4. packetW destination address is %b%b",Xdest_Win,Ydest_Win);
 	if (Xdest_Win==Xaddr & Ydest_Win==Yaddr) 
 		begin
 		W_ctrl.Send(10);
-		//$display("4. packetW should send from WEST to PE"); 
+		$display("router_num:%m---4. packetW should send from WEST to PE"); 
 		end
 	else if (Xdest_Win > Xaddr)            
 		begin
 		W_ctrl.Send(11);
-		//$display("4. packetW should send from WEST to EAST"); 
+		$display("router_num:%m---4. packetW should send from WEST to EAST"); 
 		end
 	else if (Ydest_Win > Yaddr)           
 		begin
 		W_ctrl.Send(00);
-		//$display("4. packetW should send from WEST to SOUTH"); 
+		$display("router_num:%m---4. packetW should send from WEST to SOUTH"); 
 		end
 	else if (Ydest_Win < Yaddr)            
 		begin
 		W_ctrl.Send(01);
-		//$display("4. packetW should send from WEST to NORTH"); 
+		$display("router_num:%m---4. packetW should send from WEST to NORTH"); 
 		end
 	W_R.Send(packet_Win); #BL;
 end
@@ -167,34 +167,34 @@ end
 //packet comes from PE
 always begin
 	P_L.Receive(packet_Pin); #FL;
-	//$display("5. PE receive packetP(%b)",packet_Pin);
+	$display("router_num:%m---5. PE receive packetP(%b)",packet_Pin);
 	fork
 	Xsour_Pin = packet_Pin[WIDTH-1:WIDTH-2];
 	Ysour_Pin = packet_Pin[WIDTH-3:WIDTH-4];
 	Xdest_Pin = packet_Pin[WIDTH-5:WIDTH-6];
 	Ydest_Pin = packet_Pin[WIDTH-7:WIDTH-8];
 	join
-	//$display("5. The router address is %b%b",Xaddr,Yaddr);
-	//$display("5. packetP destination address is %b%b",Xdest_Pin,Ydest_Pin);
+	$display("router_num:%m---5. The router address is %b%b",Xaddr,Yaddr);
+	$display("router_num:%m---5. packetP destination address is %b%b",Xdest_Pin,Ydest_Pin);
 	if (Xdest_Pin > Xaddr)      
 		begin
 		P_ctrl.Send(11);
-		//$display("5. packetP should send from PE to EAST"); 
+		$display("router_num:%m---5. packetP should send from PE to EAST"); 
 		end
 	else if (Xdest_Pin < Xaddr) 
 		begin
 		P_ctrl.Send(00);
-		//$display("5. packetP should send from PE to WEST"); 
+		$display("router_num:%m---5. packetP should send from PE to WEST"); 
 		end
 	else if (Ydest_Pin > Yaddr) 
 		begin
 		P_ctrl.Send(10);
-		//$display("5. packetP should send from PE to SOUTH"); 
+		$display("router_num:%m---5. packetP should send from PE to SOUTH"); 
 		end
 	else if (Ydest_Pin < Yaddr) 
 		begin
 		P_ctrl.Send(01);
-		//$display("5. packetP should send from PE to NORTH"); 
+		$display("router_num:%m---5. packetP should send from PE to NORTH"); 
 		end
 	P_R.Send(packet_Pin); #BL;
 end
