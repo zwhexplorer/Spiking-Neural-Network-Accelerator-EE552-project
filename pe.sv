@@ -206,8 +206,7 @@ module packetizer_PE(interface result, ifmap_in, ifmap_count, addr_in, packet);
 	logic [WIDTH_mem-1:0] result_value;
 	logic [WIDTH_ifmap-1:0] mapvalue;
 	logic [WIDTH_addr-1:0] addr_value;
-	
-	always  ifmap_in.Receive(mapvalue);
+
 	always	addr_in.Receive(addr_value);  
 	always begin
 		$display("Start module %m and time is %t", $time);	
@@ -223,23 +222,24 @@ module packetizer_PE(interface result, ifmap_in, ifmap_count, addr_in, packet);
 		endcase
 		packet.Send(packet_value);
 		$display("In module %m, packet_value is %b", packet_value);
-		#BL
-		if(addr_value==PE2_addr)
-			begin
-				packet_value={addr_value,PE1_addr,input_type,long_range_zeros,mapvalue};
-				packet.Send(packet_value);
-				#BL;
-			end
-			else if(addr_value==PE3_addr)
-			begin
-				packet_value={addr_value,PE2_addr,input_type,long_range_zeros,mapvalue};
-				packet.Send(packet_value);
-				#BL;
-			end
-		$display("In module %m, packet_value is %b", packet_value);
-		//end
-		
-	end	
+		#BL;
+	end
+	always begin
+	ifmap_in.Receive(mapvalue);
+	if(addr_value==PE2_addr)
+		begin
+			packet_value={addr_value,PE1_addr,input_type,long_range_zeros,mapvalue};
+			packet.Send(packet_value);
+			#BL;
+		end
+		else if(addr_value==PE3_addr)
+		begin
+			packet_value={addr_value,PE2_addr,input_type,long_range_zeros,mapvalue};
+			packet.Send(packet_value);
+			#BL;
+		end
+	$display("In module %m, packet_value is %b", packet_value);
+	end
 endmodule
 
 module pe(interface packet_in, packet_out);
