@@ -271,7 +271,7 @@ endmodule
 
 
 
-/*
+
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------
 module router (interface N_in, N_out, S_in, S_out, E_in, E_out, W_in, W_out, P_in, P_out);
@@ -298,7 +298,6 @@ parameter Yaddr;
 	arbiter_withpacket_5      #(.WIDTH(WIDTH), .FL(FL), .BL(BL)) arbi_P(.A(intf[27]), .B(intf[31]), .C(intf[35]), .D(intf[39]), .R(P_out));
 
 endmodule
-*/
 
 
 
@@ -306,6 +305,7 @@ endmodule
 
 
 
+/*
 module data_generator_5_N(interface R);
 parameter WIDTH = 34;
 parameter FL = 4;
@@ -395,7 +395,7 @@ module router_tb;
 	data_generator_5_E        #(.WIDTH(8), .FL(10)) dg_E(.R(intf[58]));
 	data_generator_5_W        #(.WIDTH(8), .FL(10)) dg_W(.R(intf[57]));
 	data_generator_5_P        #(.WIDTH(8), .FL(10)) dg_P(.R(intf[59]));
-	packet_analyser_5         #(.WIDTH(8), .FL(2), .BL(2), .Xaddr(00), .Yaddr(00)) 
+	packet_analyser_5         #(.WIDTH(8), .FL(2), .BL(2), .Xaddr(10), .Yaddr(00)) 
 									pac_ana(.N_L(intf[55]), .N_ctrl(intf[50]), .N_R(intf[20]), 
 											.S_L(intf[56]), .S_ctrl(intf[51]), .S_R(intf[21]), 
 											.E_L(intf[58]), .E_ctrl(intf[53]), .E_R(intf[23]), 
@@ -419,3 +419,4 @@ module router_tb;
 initial
 	#50 $stop;
 endmodule
+*/
