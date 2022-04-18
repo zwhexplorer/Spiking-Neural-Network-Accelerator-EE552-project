@@ -243,7 +243,7 @@ endmodule
 
 
 
-/*
+
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------
 module arbiter_withpacket_5 (interface A, B, C, D, R);
@@ -262,7 +262,7 @@ parameter FL, BL;
 	
 endmodule
 
-*/
+
 
 
 
@@ -300,7 +300,7 @@ endmodule
 
 
 
-
+/*
 module data_generator_5_N(interface R);
 parameter WIDTH = 34;
 parameter FL = 4;
@@ -415,3 +415,4 @@ module router_tb;
 initial
 	#200 $stop;
 endmodule
+*/
