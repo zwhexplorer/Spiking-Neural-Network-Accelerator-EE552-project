@@ -226,6 +226,7 @@ module packetizer_PE(interface result, ifmap_in, ifmap_count, addr_in, packet);
 	end
 	always begin
 	ifmap_in.Receive(mapvalue);
+	#FL;
 	if(addr_value==PE2_addr)
 		begin
 			packet_value={addr_value,PE1_addr,input_type,long_range_zeros,mapvalue};
