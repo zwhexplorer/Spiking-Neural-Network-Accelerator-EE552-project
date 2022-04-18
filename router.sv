@@ -125,6 +125,7 @@ always begin
 		$display("router_num:%m---3. packetE should send from EAST to NORTH"); 
 		end
 	E_R.Send(packet_Ein); #BL;
+	$display("router_num:%m---3. SOUTH already sent packetE(%b)",packet_Ein); 
 end
 
 
@@ -217,25 +218,31 @@ always begin
 	fork
 	begin
 	L.Receive(packet);
+	$display("router_split:%m---6. Split already receive packet(%b)",packet);
 	#FL;
 	end
 	begin
 	Ctrl.Receive(controlPort);
+	$display("router_split:%m---6. Split already receive contrl(%b)",controlPort);
 	#FL;
 	end
 	join
 
 	if(controlPort==2'b00) begin
 	A.Send(packet);
+	$display("router_split:%m---6. Split already send packet(%b) to A port",packet);
 	#BL; end
 	else if(controlPort==2'b01) begin
 	B.Send(packet);
+	$display("router_split:%m---6. Split already send packet(%b) to B port",packet);
 	#BL; end
 	else if(controlPort==2'b10) begin
 	C.Send(packet);
+	$display("router_split:%m---6. Split already send packet(%b) to C port",packet);
 	#BL; end
 	else if(controlPort==2'b11) begin
 	D.Send(packet);
+	$display("router_split:%m---6. Split already send packet(%b) to D port",packet);
 	#BL; end
 end
 endmodule
@@ -257,15 +264,14 @@ parameter FL, BL;
 	arbiter_pipeline_2  #(.WIDTH(2), .FL(FL), .BL(BL)) ap1(.A(intf[0]), .B(intf[1]), .W(intf[2]), .O(intf[3]));
 	arbiter_pipeline_2  #(.WIDTH(2), .FL(FL), .BL(BL)) ap2(.A(intf[4]), .B(intf[5]), .W(intf[6]), .O(intf[7]));
 	arbiter_slackless_2 #(.WIDTH(2), .FL(FL), .BL(FL)) as1(.A(intf[3]), .B(intf[7]), .W(intf[8]));
-	merge_2             #(.WIDTH(2), .FL(FL), .BL(FL)) mg(.L0(intf[2]), .L1(intf[6]), .R(intf[9]), .Ctrl(intf[8]));
+	merge_2             #(.WIDTH(2), .FL(FL), .BL(FL)) mg(.L1(intf[2]), .L2(intf[6]), .R(intf[9]), .Ctrl(intf[8]));
 	merge_packet_2      #(.WIDTH(WIDTH), .FL(FL), .BL(FL)) mg_P(.A(intf[14]), .B(intf[15]), .C(intf[16]), .D(intf[17]), .R(R), .Ctrl(intf[9]));
-	
 endmodule
 
 
 
 
-
+/*
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------
 module router (interface N_in, N_out, S_in, S_out, E_in, E_out, W_in, W_out, P_in, P_out);
@@ -292,6 +298,7 @@ parameter Yaddr;
 	arbiter_withpacket_5      #(.WIDTH(WIDTH), .FL(FL), .BL(BL)) arbi_P(.A(intf[27]), .B(intf[31]), .C(intf[35]), .D(intf[39]), .R(P_out));
 
 endmodule
+*/
 
 
 
@@ -299,8 +306,6 @@ endmodule
 
 
 
-
-/*
 module data_generator_5_N(interface R);
 parameter WIDTH = 34;
 parameter FL = 4;
@@ -308,8 +313,8 @@ logic [WIDTH-1:0] SendValue;
 initial begin 
 	#5;
 //	SendValue = 8'b0100_0001; R.Send(SendValue); #FL; 
-	SendValue = 8'b0100_0101; R.Send(SendValue); #FL;
-	SendValue = 8'b0100_0110; R.Send(SendValue); #FL;
+//	SendValue = 8'b0100_0101; R.Send(SendValue); #FL;
+//	SendValue = 8'b0100_0110; R.Send(SendValue); #FL;
 //	SendValue = 8'b0100_1001; #FL; R.Send(SendValue);
 //	SendValue = 8'b0100_0010; #FL; R.Send(SendValue);
 end
@@ -319,7 +324,7 @@ parameter WIDTH = 34;
 parameter FL = 4;
 logic [WIDTH-1:0] SendValue;
 initial begin 
-	SendValue = 8'b0110_0101; R.Send(SendValue); #FL;
+//	SendValue = 8'b0110_0101; R.Send(SendValue); #FL;
 //	SendValue = 8'b0110_1000; #FL; R.Send(SendValue);
 //	SendValue = 8'b0110_0100; #FL; R.Send(SendValue);
 //	SendValue = 8'b0110_0000; #FL; R.Send(SendValue);
@@ -331,8 +336,8 @@ parameter WIDTH = 34;
 parameter FL = 4;
 logic [WIDTH-1:0] SendValue;
 initial begin 
-	SendValue = 8'b1001_0101; R.Send(SendValue); #FL;
-	SendValue = 8'b1001_0110; R.Send(SendValue); #FL;
+//	SendValue = 8'b0100_0010; R.Send(SendValue); #FL;
+//	SendValue = 8'b1001_0110; R.Send(SendValue); #FL;
 //	SendValue = 8'b1001_0100; #FL; R.Send(SendValue);
 //	SendValue = 8'b1001_0000; #FL; R.Send(SendValue);
 //	SendValue = 8'b1001_0001; R.Send(SendValue); #FL;
@@ -342,10 +347,9 @@ module data_generator_5_W(interface R);
 parameter WIDTH = 34;
 parameter FL = 4;
 logic [WIDTH-1:0] SendValue;
-initial begin 
-	
-	SendValue = 8'b0001_0101; R.Send(SendValue); #FL;
-	SendValue = 8'b0001_0110; R.Send(SendValue); #FL;
+initial begin 	
+	SendValue = 8'b0100_1010; R.Send(SendValue); #FL;
+//	SendValue = 8'b0001_0110; R.Send(SendValue); #FL;
 //	SendValue = 8'b0001_0100; #FL; R.Send(SendValue);
 //	SendValue = 8'b0001_1001; #FL; R.Send(SendValue);
 //	SendValue = 8'b0001_1010; #FL; R.Send(SendValue);
@@ -358,7 +362,7 @@ logic [WIDTH-1:0] SendValue;
 initial begin 
 	#15;
 //	SendValue = 8'b0101_0000; R.Send(SendValue); #FL;
-	SendValue = 8'b0101_0110; R.Send(SendValue); #FL;
+//	SendValue = 8'b0100_0010; R.Send(SendValue); #FL;
 //	SendValue = 8'b0101_0100; #FL; R.Send(SendValue);
 //	SendValue = 8'b0101_1001; #FL; R.Send(SendValue);
 //	SendValue = 8'b0101_1010; #FL; R.Send(SendValue);
@@ -391,7 +395,7 @@ module router_tb;
 	data_generator_5_E        #(.WIDTH(8), .FL(10)) dg_E(.R(intf[58]));
 	data_generator_5_W        #(.WIDTH(8), .FL(10)) dg_W(.R(intf[57]));
 	data_generator_5_P        #(.WIDTH(8), .FL(10)) dg_P(.R(intf[59]));
-	packet_analyser_5         #(.WIDTH(8), .FL(2), .BL(2), .Xaddr(01), .Yaddr(01)) 
+	packet_analyser_5         #(.WIDTH(8), .FL(2), .BL(2), .Xaddr(00), .Yaddr(00)) 
 									pac_ana(.N_L(intf[55]), .N_ctrl(intf[50]), .N_R(intf[20]), 
 											.S_L(intf[56]), .S_ctrl(intf[51]), .S_R(intf[21]), 
 											.E_L(intf[58]), .E_ctrl(intf[53]), .E_R(intf[23]), 
@@ -413,6 +417,5 @@ module router_tb;
 	data_bucket_5             #(.WIDTH(8), .BL(10)) db_W(.L(intf[47]));
 	data_bucket_5             #(.WIDTH(8), .BL(10)) db_P(.L(intf[49]));
 initial
-	#200 $stop;
+	#50 $stop;
 endmodule
-*/
