@@ -47,7 +47,7 @@ always begin
 		N_ctrl.Send(00); 
 		$display("router_num:%m---1. packetN should send from NORTH to WEST");
 		end
-	else if (Ydest_Nin > Yaddr)           
+	else if (Ydest_Nin > Yaddr & Xdest_Nin==Xaddr)           
 		begin 
 		N_ctrl.Send(01); 
 		$display("router_num:%m---1. packetN should send from NORTH to SOUTH");
@@ -83,7 +83,7 @@ always begin
 		S_ctrl.Send(00);
 		$display("router_num:%m---2. packetS should send from SOUTH to WEST"); 
 		end
-	else if (Ydest_Sin < Yaddr)            
+	else if (Ydest_Sin < Yaddr & Xdest_Sin==Xaddr)            
 		begin
 		S_ctrl.Send(01);
 		$display("router_num:%m---2. packetS should send from SOUTH to NORTH"); 
@@ -114,12 +114,12 @@ always begin
 		E_ctrl.Send(00);
 		$display("router_num:%m---3. packetE should send from EAST to WEST"); 
 		end
-	else if (Ydest_Ein > Yaddr)            
+	else if (Ydest_Ein > Yaddr & Xdest_Ein==Xaddr)            
 		begin
 		E_ctrl.Send(11);
 		$display("router_num:%m---3. packetE should send from EAST to SOUTH"); 
 		end
-	else if (Ydest_Ein < Yaddr)            
+	else if (Ydest_Ein < Yaddr & Xdest_Ein==Xaddr)            
 		begin
 		E_ctrl.Send(01);
 		$display("router_num:%m---3. packetE should send from EAST to NORTH"); 
@@ -150,12 +150,12 @@ always begin
 		W_ctrl.Send(11);
 		$display("router_num:%m---4. packetW should send from WEST to EAST"); 
 		end
-	else if (Ydest_Win > Yaddr)           
+	else if (Ydest_Win > Yaddr & Xdest_Win==Xaddr)           
 		begin
 		W_ctrl.Send(00);
 		$display("router_num:%m---4. packetW should send from WEST to SOUTH"); 
 		end
-	else if (Ydest_Win < Yaddr)            
+	else if (Ydest_Win < Yaddr & Xdest_Win==Xaddr)            
 		begin
 		W_ctrl.Send(01);
 		$display("router_num:%m---4. packetW should send from WEST to NORTH"); 
@@ -186,12 +186,12 @@ always begin
 		P_ctrl.Send(00);
 		$display("router_num:%m---5. packetP should send from PE to WEST"); 
 		end
-	else if (Ydest_Pin > Yaddr) 
+	else if (Ydest_Pin > Yaddr & Xdest_Pin==Xaddr) 
 		begin
 		P_ctrl.Send(10);
 		$display("router_num:%m---5. packetP should send from PE to SOUTH"); 
 		end
-	else if (Ydest_Pin < Yaddr) 
+	else if (Ydest_Pin < Yaddr & Xdest_Pin==Xaddr) 
 		begin
 		P_ctrl.Send(01);
 		$display("router_num:%m---5. packetP should send from PE to NORTH"); 
@@ -243,7 +243,7 @@ endmodule
 
 
 
-
+/*
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------
 module arbiter_withpacket_5 (interface A, B, C, D, R);
@@ -262,7 +262,7 @@ parameter FL, BL;
 	
 endmodule
 
-
+*/
 
 
 
@@ -300,7 +300,7 @@ endmodule
 
 
 
-/*
+
 module data_generator_5_N(interface R);
 parameter WIDTH = 34;
 parameter FL = 4;
@@ -314,8 +314,6 @@ initial begin
 //	SendValue = 8'b0100_0010; #FL; R.Send(SendValue);
 end
 endmodule
-
-
 module data_generator_5_S(interface R);
 parameter WIDTH = 34;
 parameter FL = 4;
@@ -328,8 +326,6 @@ initial begin
 //	SendValue = 8'b0110_0001; R.Send(SendValue); #FL;
 end
 endmodule
-
-
 module data_generator_5_E(interface R);
 parameter WIDTH = 34;
 parameter FL = 4;
@@ -342,8 +338,6 @@ initial begin
 //	SendValue = 8'b1001_0001; R.Send(SendValue); #FL;
 end
 endmodule
-
-
 module data_generator_5_W(interface R);
 parameter WIDTH = 34;
 parameter FL = 4;
@@ -357,9 +351,6 @@ initial begin
 //	SendValue = 8'b0001_1010; #FL; R.Send(SendValue);
 end
 endmodule
-
-
-
 module data_generator_5_P(interface R);
 parameter WIDTH = 34;
 parameter FL = 4;
@@ -373,9 +364,6 @@ initial begin
 //	SendValue = 8'b0101_1010; #FL; R.Send(SendValue);
 end
 endmodule
-
-
-
 module data_generator_5(interface R);
 parameter WIDTH = 12;
 parameter FL = 4;
@@ -386,9 +374,6 @@ always begin
 	#FL;
 end
 endmodule
-
-
-
 module data_bucket_5 (interface L);
 parameter WIDTH = 12;
 parameter BL = 2; 
@@ -398,8 +383,6 @@ always begin
 	#BL;
 end
 endmodule
-
-
 //-------------------------------------------------------------------------------------------------------------------------------------------------------
 module router_tb; 
 	Channel #(.hsProtocol(P4PhaseBD),.WIDTH(34)) intf  [59:20] ();
@@ -429,12 +412,6 @@ module router_tb;
 	data_bucket_5             #(.WIDTH(8), .BL(10)) db_E(.L(intf[48]));
 	data_bucket_5             #(.WIDTH(8), .BL(10)) db_W(.L(intf[47]));
 	data_bucket_5             #(.WIDTH(8), .BL(10)) db_P(.L(intf[49]));
-
-
 initial
-	#80 $stop;
-
+	#200 $stop;
 endmodule
-*/
-
-
