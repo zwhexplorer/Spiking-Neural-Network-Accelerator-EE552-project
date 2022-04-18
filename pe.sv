@@ -17,24 +17,24 @@ module depacketizer_PE(interface packet, out_filter, out_ifmap, addr_out);
 	
 	always begin
 		packet.Receive(value);
-		$display("In %m, receive value=%b, Simulation time =%t",value, $time);
+		$display("receive value=%b, Simulation time =%t",value, $time);
 		#FL;
 		if(value[WIDTH-9:WIDTH-10]==input_type)
 			begin
 				mapvalue = value[WIDTH-30:0];
 				out_ifmap.Send(mapvalue);
-				$display("In %m send mapvalue=%b, Simulation time =%t",mapvalue, $time);
+				$display("send mapvalue=%b, Simulation time =%t",mapvalue, $time);
 			end
 			else if(value[WIDTH-9:WIDTH-10]==kernel_type)
 			begin
 				filvalue = value[WIDTH-11:0];
 				out_filter.Send(filvalue);
-				$display("In %m send filvalue=%b, Simulation time =%t",filvalue, $time);
+				$display("send filvalue=%b, Simulation time =%t",filvalue, $time);
 			end
 		#BL;
 		addr_value=value[WIDTH-5:WIDTH-8];
 		addr_out.Send(addr_value);
-		$display("In %m send addr_value=%b, Simulation time =%t",addr_value, $time);
+		//$display("send addr_value=%b, Simulation time =%t",addr_value, $time);
 		#BL;
 	end
 endmodule
@@ -50,20 +50,22 @@ logic [WIDTH-1:0] ifmap_value;
 
 always begin
 	ifmap_in.Receive(ifmap_value);
-	$display("In %m receive ifmap_value=%b",ifmap_value);
+	$display("receive ifmap_value=%b",ifmap_value);
 	#FL;
 	for(j=0;j<=range;j++)
 	begin
 		for(i=j;i<=j+range;i++)
 		begin
 		sendvalue=ifmap_value[i];
-		ifmap_out.Send(sendvalue);
-		if(j==range) 
-			to_packet.Send(ifmap_value);
-		$display("In %m send ifmap_value=%b, Simulation time =%t",sendvalue, $time);
+		ifmap_out.Send(sendvalue);	
+		$display("send ifmap_value=%b, Simulation time =%t",sendvalue, $time);
 		#BL;
-		end	
+		end
 		ifmap_count.Send(j);
+		if(j==range) begin
+			to_packet.Send(ifmap_value);
+		end		
+		#BL;
 	end
 end
 endmodule
@@ -80,7 +82,7 @@ logic [range:0] i=0, j=0;
 
 always begin
 	filter_in.Receive(filter_value);
-	$display("In %m receive filter_value=%b",filter_value);
+	$display("receive filter_value=%b",filter_value);
 	#FL;
 	for(j=0;j<=range;j++)
 	begin
@@ -94,7 +96,7 @@ always begin
 				sendvalue=filter_value[WIDTH_UNIT+15:WIDTH_UNIT+8];
 			count_out.Send(i);
 			filter_out.Send(sendvalue);
-			$display("In %m filter_send value %b, Simulation time =%t",sendvalue,$time);
+			$display("filter_send value %b, Simulation time =%t",sendvalue,$time);
 			#BL;
 		end
 	end
@@ -116,7 +118,7 @@ always begin
 	join
 	#FL;
 	multi_out_value=filter_value*ifmap_value;
-	$display("In %m multi_out_value = %b ", multi_out_value);
+//	$display("multi_out_value = %b ", multi_out_value);
 	multi_out.Send(multi_out_value);
 	#BL;
 	end
@@ -136,7 +138,7 @@ module adder(interface a0, b0, sum);
 		a0.Receive(a);	
 		#FL;	
 		s=a+b;
-		$display("In %m SumValue_S =%d. time is %t", s, $time);
+		$display("SumValue_S =%d. time is %t", s, $time);
 		sum.Send(s);
 		#BL;										
 	end
@@ -164,7 +166,7 @@ module split (interface inPort,count_sel, acc_out, pkt_out);
 			inPort.Receive(A);
 			#FL;
 			pkt_out.Send(A);
-			$display("In %m sum_out%d at %t",A, $time);
+			$display("sum_out%d at %t",A, $time);
 			acc_out.Send(0);
 			#BL;
 		end
@@ -186,7 +188,7 @@ module accumulator(interface I, O);
 	I.Receive(token);
 	#FL;
 	O.Send(token);
-	$display("In %m send accumulated value = %d", token);
+//	$display("send accumulated value = %d", token);
 	#BL;
   end
 endmodule
