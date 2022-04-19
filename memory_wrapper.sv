@@ -11,7 +11,7 @@ parameter WIDTH_NOC=34;
 parameter WIDTH_ifmap=5, WIDTH_filter=24;
 parameter PE1_addr=4'b0010, PE2_addr=4'b0110, PE3_addr=4'b1010;
 parameter wrapper_addr=4'b0000, adder1_addr=4'b0001, adder2_addr=4'b0101, adder3_addr=4'b1001;
-parameter input_type=2'b00, kernel_type=2'b01, mem_type=2'b10;
+parameter input_type=2'b00, kernel_type=2'b01, mem_type=2'b10, out_type=2'b11;
 parameter long_range_zeros={{6{3'b000}}, 1'b0}, short_range_zeros={4{4'b0000}};
 parameter DONE=4'b1111;
 
@@ -142,22 +142,7 @@ parameter DONE=4'b1111;
 				fromNOC.Receive(nocval);
 				//send membrane potential and output spikes
 				$display("%m receive value is %b in %t", nocval, $time);
-				if(nocval[WIDTH_NOC-31:0]!=DONE) begin
-					if(nocval[WIDTH_NOC-9:WIDTH_NOC-10]==10) begin
-						toMemWrite.Send(write_mempots);
-						toMemX.Send(i);
-						toMemY.Send(j);
-						toMemSendData.Send(nocval[WIDTH_NOC-27:0]);
-					end
-					else if(nocval[WIDTH_NOC-9:WIDTH_NOC-10]==11) begin
-						toMemWrite.Send(write_ofmaps);
-						//adder -> wrapper send only 1 for output spikes
-						toMemX.Send(nocval[WIDTH_NOC-31:WIDTH_NOC-32]);
-						toMemY.Send(nocval[WIDTH_NOC-33:0]);				
-						//toMemSendData.Send(1);
-					end
-				end
-				else begin
+				if((nocval[WIDTH_NOC-9:WIDTH_NOC-10]==out_type) & (nocval[WIDTH_NOC-31:0]==DONE)) begin
 					toMemWrite.Send(write_ofmaps);
 					//wrapper send Done to memory
 					toMemX.Send(nocval[WIDTH_NOC-31:WIDTH_NOC-32]);
@@ -176,7 +161,21 @@ parameter DONE=4'b1111;
 						toNOC.Send(nocval);
 						$display("%m toNOC send is %b in %t", nocval, $time);
 					end
-					//break;
+				end
+				else begin
+					if(nocval[WIDTH_NOC-9:WIDTH_NOC-10]==mem_type) begin
+						toMemWrite.Send(write_mempots);
+						toMemX.Send(i);
+						toMemY.Send(j);
+						toMemSendData.Send(nocval[WIDTH_NOC-27:0]);
+					end
+					else if(nocval[WIDTH_NOC-9:WIDTH_NOC-10]==out_type) begin
+						toMemWrite.Send(write_ofmaps);
+						//adder -> wrapper send only 1 for output spikes
+						toMemX.Send(nocval[WIDTH_NOC-31:WIDTH_NOC-32]);
+						toMemY.Send(nocval[WIDTH_NOC-33:0]);				
+						//toMemSendData.Send(1);
+					end
 				end
 			end // ofy
 		end // ofx
