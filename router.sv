@@ -125,7 +125,6 @@ always begin
 		$display("router_num:%m---3. packetE should send from EAST to NORTH"); 
 		end
 	E_R.Send(packet_Ein); #BL;
-	$display("router_num:%m---3. SOUTH already sent packetE(%b)",packet_Ein); 
 end
 
 
@@ -257,7 +256,7 @@ module arbiter_withpacket_5 (interface A, B, C, D, R);
 parameter WIDTH;
 parameter FL, BL;
 	Channel #(.hsProtocol(P4PhaseBD),.WIDTH(34)) intf  [19:0] ();
-	packet_dispatch_2   #(.WIDTH(WIDTH), .FL(FL)) P_dis(.A(A), .A_P(intf[14]), .A_S(intf[0]),
+	packet_dispatch_2   #(.WIDTH(WIDTH), .FL(FL), .BL(BL)) P_dis(.A(A), .A_P(intf[14]), .A_S(intf[0]),
 														.B(B), .B_P(intf[15]), .B_S(intf[1]),
 														.C(C), .C_P(intf[16]), .C_S(intf[4]),
 														.D(D), .D_P(intf[17]), .D_S(intf[5]));
@@ -336,7 +335,7 @@ parameter WIDTH = 34;
 parameter FL = 4;
 logic [WIDTH-1:0] SendValue;
 initial begin 
-//	SendValue = 8'b0100_0010; R.Send(SendValue); #FL;
+	SendValue = 8'b0110_0001; R.Send(SendValue); #FL;
 //	SendValue = 8'b1001_0110; R.Send(SendValue); #FL;
 //	SendValue = 8'b1001_0100; #FL; R.Send(SendValue);
 //	SendValue = 8'b1001_0000; #FL; R.Send(SendValue);
@@ -395,7 +394,7 @@ module router_tb;
 	data_generator_5_E        #(.WIDTH(8), .FL(10)) dg_E(.R(intf[58]));
 	data_generator_5_W        #(.WIDTH(8), .FL(10)) dg_W(.R(intf[57]));
 	data_generator_5_P        #(.WIDTH(8), .FL(10)) dg_P(.R(intf[59]));
-	packet_analyser_5         #(.WIDTH(8), .FL(2), .BL(2), .Xaddr(10), .Yaddr(00)) 
+	packet_analyser_5         #(.WIDTH(8), .FL(2), .BL(2), .Xaddr(00), .Yaddr(10)) 
 									pac_ana(.N_L(intf[55]), .N_ctrl(intf[50]), .N_R(intf[20]), 
 											.S_L(intf[56]), .S_ctrl(intf[51]), .S_R(intf[21]), 
 											.E_L(intf[58]), .E_ctrl(intf[53]), .E_R(intf[23]), 
