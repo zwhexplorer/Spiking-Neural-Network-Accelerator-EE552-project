@@ -161,7 +161,17 @@ module memory(interface read, write, T, x, y, data_out, data_in);
 					if (row == 2'b11 & col == 2'b11) begin
 						$display("%m  Done received");
 					end
-					else if (row >= OF_ROWS | col >= OF_COLS) begin
+					case(row)
+						2'b00: row=0;
+						2'b01: row=1;
+						2'b11: row=2;
+					endcase
+					case(col)
+						2'b00: col=0;
+						2'b01: col=1;
+						2'b11: col=2;
+					endcase
+					if (row >= OF_ROWS | col >= OF_COLS) begin
 						$display("%m writing beyond the edge of output spike array");
 					end
 					else begin 
