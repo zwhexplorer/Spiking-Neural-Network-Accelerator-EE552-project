@@ -158,16 +158,11 @@ module memory(interface read, write, T, x, y, data_out, data_in);
 					V_pot_mem[row][col] = mem_pot_val;
 				end
 				else if (wtype == 1) begin // user wants to write output spikes
-					if (row == OF_ROWS & col == OF_COLS) begin
-						$display("%m  Done received");
-					end
-					else if (row > OF_ROWS | col > OF_COLS) begin
+				    if (row >= OF_ROWS | col >= OF_COLS) begin
 						$display("%m writing beyond the edge of output spike array");
 					end
-					else begin 
 					//data_in.Receive(spike_val);					
 					of_mem[t][row][col] = 1;//adder -> wrapper send only 1 for output spike
-					end
 				end
 				else begin
 					$display("%m request to write from an unknown memory");

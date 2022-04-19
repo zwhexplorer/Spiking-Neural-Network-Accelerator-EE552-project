@@ -139,36 +139,39 @@ parameter DONE=4'b1111;
 					toNOC.Send(nocval);
 					$display("%m toNOC send is %b in %t", nocval, $time);
 				end
-				fromNOC.Receive(nocval);
+				fromNOC.Receive(nocval);			
 				//send membrane potential and output spikes
 				$display("%m receive value is %b in %t", nocval, $time);
-					if(nocval[WIDTH_NOC-9:WIDTH_NOC-10]==mem_type) begin
-						toMemWrite.Send(write_mempots);
-						toMemX.Send(i);
-						toMemY.Send(j);
-						toMemSendData.Send(nocval[WIDTH_NOC-27:0]);
-					end
-					else if(nocval[WIDTH_NOC-9:WIDTH_NOC-10]==out_type) begin
-						toMemWrite.Send(write_ofmaps);
-						//adder -> wrapper send only 1 for output spikes
-						toMemX.Send(nocval[WIDTH_NOC-31:WIDTH_NOC-32]);
-						toMemY.Send(nocval[WIDTH_NOC-33:0]);				
-						//toMemSendData.Send(1);
-					end
-				if((nocval[WIDTH_NOC-9:WIDTH_NOC-10]==out_type) & (nocval[WIDTH_NOC-31:0]==DONE)) begin				
-					if(i<2) begin
+				if((nocval[WIDTH_NOC-9:WIDTH_NOC-10]==out_type) & (nocval[WIDTH_NOC-31:0]==DONE)) begin	
+					$display("%m  Done received");
+					if(i<3) begin
 						for(int k=0; k< ify; k++) begin
 							toMemRead.Send(read_ifmaps);
-							toMemX.Send(i+3);
+							toMemX.Send(i+2);
 							toMemY.Send(k);
 							fromMemGetData.Receive(spikeval);
 							ifmapvalue[k]=spikeval;
-							$display("%m received ifm[%d][%d] = %b",i+3,k,spikeval);	
+							$display("%m received ifm[%d][%d] = %b",i+2,k,spikeval);	
 						end
 						#mem_delay; // wait for them to arrive
 						nocval={wrapper_addr, PE3_addr, input_type, long_range_zeros, ifmapvalue};
 						toNOC.Send(nocval);
 						$display("%m toNOC send is %b in %t", nocval, $time);
+					end
+				end
+				else begin
+					if(nocval[WIDTH_NOC-9:WIDTH_NOC-10]==mem_type) begin
+							toMemWrite.Send(write_mempots);
+							toMemX.Send(i);
+							toMemY.Send(j);
+							toMemSendData.Send(nocval[WIDTH_NOC-27:0]);
+					end
+					else if(nocval[WIDTH_NOC-9:WIDTH_NOC-10]==out_type) begin
+							toMemWrite.Send(write_ofmaps);
+							//adder -> wrapper send only 1 for output spikes
+							toMemX.Send(nocval[WIDTH_NOC-31:WIDTH_NOC-32]);
+							toMemY.Send(nocval[WIDTH_NOC-33:0]);				
+							//toMemSendData.Send(1);
 					end
 				end
 			end // ofy
