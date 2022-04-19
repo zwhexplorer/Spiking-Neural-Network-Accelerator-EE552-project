@@ -141,6 +141,7 @@ parameter DONE=4'b1111;
 				end
 				fromNOC.Receive(nocval);
 				//send membrane potential and output spikes
+				$display("%m receive value is %b in %t", nocval, $time);
 				if(nocval[WIDTH_NOC-31:0]!=DONE) begin
 					if(nocval[WIDTH_NOC-9:WIDTH_NOC-10]==10) begin
 						toMemWrite.Send(write_mempots);
@@ -157,21 +158,25 @@ parameter DONE=4'b1111;
 					end
 				end
 				else begin
+					toMemWrite.Send(write_ofmaps);
+					//wrapper send Done to memory
+					toMemX.Send(nocval[WIDTH_NOC-31:WIDTH_NOC-32]);
+					toMemY.Send(nocval[WIDTH_NOC-33:0]);				
 					if(i<2) begin
 						for(int k=0; k< ify; k++) begin
 							toMemRead.Send(read_ifmaps);
 							toMemX.Send(i+3);
 							toMemY.Send(k);
 							fromMemGetData.Receive(spikeval);
-							ifmapvalue[j]=spikeval;
-							$display("%m received ifm[%d][%d] = %b",i,j,spikeval);	
+							ifmapvalue[k]=spikeval;
+							$display("%m received ifm[%d][%d] = %b",i+3,k,spikeval);	
 						end
 						#mem_delay; // wait for them to arrive
 						nocval={wrapper_addr, PE3_addr, input_type, long_range_zeros, ifmapvalue};
 						toNOC.Send(nocval);
 						$display("%m toNOC send is %b in %t", nocval, $time);
 					end
-					break;
+					//break;
 				end
 			end // ofy
 		end // ofx
