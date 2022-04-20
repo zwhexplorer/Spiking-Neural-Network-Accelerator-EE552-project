@@ -56,6 +56,7 @@ always begin
 	#FL;
 	to_filter_val=new_input;
 	to_filter.Send(to_filter_val);
+	//#BL;
 	for(j=0;j<=range;j++)
 	begin
 		for(i=j;i<=j+range;i++)
@@ -77,7 +78,7 @@ endmodule
 module filter_mem (interface filter_in, count_out, filter_out, from_ifmap);
 parameter WIDTH=24;
 parameter WIDTH_UNIT=8;
-parameter new_input = 2'b11;
+parameter new_input=2'b11, old_input=2'b00;
 parameter range=2;
 parameter FL=2;
 parameter BL=1;
@@ -86,12 +87,14 @@ logic [WIDTH-1:0] filter_value;
 logic [range:0] i=0, j=0;
 logic [range-1:0] from_ifmap_val;
 
-always from_ifmap.Receive(from_ifmap_val);
 always begin
 	filter_in.Receive(filter_value);
-	$display("receive filter_value=%b",filter_value);
+	$display("receive filter_value=%b",filter_value);	
+end
+always begin
+	from_ifmap.Receive(from_ifmap_val);
 	#FL;
-	while(from_ifmap_val!=new_input) begin
+	while(from_ifmap_val==new_input) begin
 		for(j=0;j<=range;j++) begin
 			for(i=0;i<=range;i++) begin
 				if(i==0)
@@ -106,6 +109,7 @@ always begin
 				#BL;
 			end
 		end
+		from_ifmap_val=old_input;
 	end
 end
 endmodule
