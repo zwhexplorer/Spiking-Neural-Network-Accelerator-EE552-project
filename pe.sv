@@ -17,7 +17,7 @@ module depacketizer_PE(interface packet, out_filter, out_ifmap, addr_out);
 	
 	always begin
 		packet.Receive(value);
-		$display("receive value=%b, Simulation time =%t",value, $time);
+		$display("%m receive value=%b, Simulation time =%t",value, $time);
 		#FL;
 		if(value[WIDTH-9:WIDTH-10]==input_type)
 			begin
@@ -39,19 +39,23 @@ module depacketizer_PE(interface packet, out_filter, out_ifmap, addr_out);
 	end
 endmodule
 
-module ifmap_mem (interface ifmap_in, ifmap_out, to_packet, ifmap_count);
+module ifmap_mem (interface ifmap_in, ifmap_out, to_packet, ifmap_count, to_filter);
 parameter WIDTH=5;
+parameter new_input = 2'b11;
 parameter range=2;
 parameter FL=2;
 parameter BL=1;
 logic sendvalue;
 logic [range:0] i=0, j=0;
-logic [WIDTH-1:0] ifmap_value;
+logic [WIDTH-1:0] ifmap_value; 
+logic [range-1:0] to_filter_val;
 
 always begin
 	ifmap_in.Receive(ifmap_value);
 	$display("receive ifmap_value=%b",ifmap_value);
 	#FL;
+	to_filter_val=new_input;
+	to_filter.Send(to_filter_val);
 	for(j=0;j<=range;j++)
 	begin
 		for(i=j;i<=j+range;i++)
@@ -70,34 +74,37 @@ always begin
 end
 endmodule
 
-module filter_mem (interface filter_in, count_out, filter_out);
+module filter_mem (interface filter_in, count_out, filter_out, from_ifmap);
 parameter WIDTH=24;
 parameter WIDTH_UNIT=8;
+parameter new_input = 2'b11;
 parameter range=2;
 parameter FL=2;
 parameter BL=1;
 logic [WIDTH_UNIT-1:0] sendvalue;
 logic [WIDTH-1:0] filter_value;
 logic [range:0] i=0, j=0;
+logic [range-1:0] from_ifmap_val;
 
+always from_ifmap.Receive(from_ifmap_val);
 always begin
 	filter_in.Receive(filter_value);
 	$display("receive filter_value=%b",filter_value);
 	#FL;
-	for(j=0;j<=range;j++)
-	begin
-		for(i=0;i<=range;i++)
-		begin
-			if(i==0)
-				sendvalue=filter_value[WIDTH_UNIT-1:0];
-			else if(i==1)
-				sendvalue=filter_value[WIDTH_UNIT+7:WIDTH_UNIT];
-			else
-				sendvalue=filter_value[WIDTH_UNIT+15:WIDTH_UNIT+8];
-			count_out.Send(i);
-			filter_out.Send(sendvalue);
-			$display("filter_send value %b, Simulation time =%t",sendvalue,$time);
-			#BL;
+	while(from_ifmap_val!=new_input) begin
+		for(j=0;j<=range;j++) begin
+			for(i=0;i<=range;i++) begin
+				if(i==0)
+					sendvalue=filter_value[WIDTH_UNIT-1:0];
+				else if(i==1)
+					sendvalue=filter_value[WIDTH_UNIT+7:WIDTH_UNIT];
+				else
+					sendvalue=filter_value[WIDTH_UNIT+15:WIDTH_UNIT+8];
+				count_out.Send(i);
+				filter_out.Send(sendvalue);
+				$display("filter_send value %b, Simulation time =%t",sendvalue,$time);
+				#BL;
+			end
 		end
 	end
 end
@@ -246,11 +253,11 @@ module packetizer_PE(interface result, ifmap_in, ifmap_count, addr_in, packet);
 endmodule
 
 module pe(interface packet_in, packet_out);
-	 Channel #(.hsProtocol(P4PhaseBD), .WIDTH(34)) intf  [13:1] (); 
+	 Channel #(.hsProtocol(P4PhaseBD), .WIDTH(34)) intf  [14:1] (); 
 	 
 	 depacketizer_PE #(.FL(2), .BL(1)) dpkt(.packet(packet_in), .out_filter(intf[1]), .out_ifmap(intf[2]), .addr_out(intf[3]));
-	 filter_mem #(.FL(2),.BL(1)) FM (.filter_in(intf[1]),.count_out(intf[4]),.filter_out(intf[5]));
-	 ifmap_mem #(.FL(2),.BL(1)) IM (.ifmap_in(intf[2]), .ifmap_out(intf[6]), .to_packet(intf[7]), .ifmap_count(intf[13]));
+	 filter_mem #(.FL(2),.BL(1)) FM (.filter_in(intf[1]),.count_out(intf[4]),.filter_out(intf[5]), .from_ifmap(intf[14]));
+	 ifmap_mem #(.FL(2),.BL(1)) IM (.ifmap_in(intf[2]), .ifmap_out(intf[6]), .to_packet(intf[7]), .ifmap_count(intf[13]), .to_filter(intf[14]));
 	 Multiplier #(.FL(2), .BL(1)) mul(.filter_in(intf[5]), .ifmap_in(intf[6]), .multi_out(intf[8]));
 	 adder 	    #(.FL(2), .BL(1)) add(.a0(intf[8]), .b0(intf[9]), .sum(intf[10]));
 	 split      #(.FL(2), .BL(1)) spl(.inPort(intf[10]), .count_sel(intf[4]), .acc_out(intf[11]), .pkt_out(intf[12]));
