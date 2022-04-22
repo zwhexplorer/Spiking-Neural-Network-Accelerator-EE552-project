@@ -108,13 +108,13 @@ parameter DONE=4'b1111;
 		for (int i = 0; i < ofx; i++) begin
 			for (int j = 0; j < ofy; j++) begin
 			//read old membrane potential
-				if(t>=2) begin
-					if((i==0)) begin
+				if(t>=2 & i==0) begin
+					for(int k=0; k< ofy; k++) begin
 						toMemRead.Send(read_mempots);
 						toMemX.Send(i);
-						toMemY.Send(j);
+						toMemY.Send(k);
 						fromMemGetData.Receive(byteval);
-						case(j)
+						case(k)
 							0: nocval={wrapper_addr, adder1_addr,mem_type, short_range_zeros, byteval};
 							1: nocval={wrapper_addr, adder2_addr,mem_type, short_range_zeros, byteval};
 							2: nocval={wrapper_addr, adder3_addr,mem_type, short_range_zeros, byteval};
@@ -128,17 +128,19 @@ parameter DONE=4'b1111;
 				$display("%m receive value is %b in %t", nocval, $time);
 				if((nocval[WIDTH_NOC-9:WIDTH_NOC-10]==out_type) & (nocval[WIDTH_NOC-31:0]==DONE)) begin	
 					if(t>=2) begin
+						for(int k=0; k< ofy; k++) begin
 							toMemRead.Send(read_mempots);
 							toMemX.Send(i);
-							toMemY.Send(j);
+							toMemY.Send(k);
 							fromMemGetData.Receive(byteval);
-							case(j)
+							case(k)
 								0: nocval={wrapper_addr, adder1_addr,mem_type, short_range_zeros, byteval};
 								1: nocval={wrapper_addr, adder2_addr,mem_type, short_range_zeros, byteval};
 								2: nocval={wrapper_addr, adder3_addr,mem_type, short_range_zeros, byteval};
 							endcase
 							toNOC.Send(nocval);
 							$display("%m toNOC send oldmem_p is %b in %t", nocval, $time);
+						end
 					end
 					$display("%m  Done received");
 					if(i<3) begin
@@ -186,42 +188,7 @@ parameter DONE=4'b1111;
 	#mem_delay; // let memory display comparison of golden vs your outputs
 	$stop;
   end
-  /*initial begin
-    for (int t = 1; t <= timesteps; t++) begin
-		for (int i = 0; i < ofx; i++) begin
-			for (int j = 0; j < ofy; j++) begin
-				fromNOC.Receive(nocval);	
-				if((nocval[WIDTH_NOC-9:WIDTH_NOC-10]==out_type) & (nocval[WIDTH_NOC-31:0]==DONE)) begin				
-					$display("%m  Done received");
-					if(i<2) begin
-						for(int k=0; k< ify; k++) begin
-							toMemRead.Send(read_ifmaps);
-							toMemX.Send(i+3);
-							toMemY.Send(k);
-							fromMemGetData.Receive(spikeval);
-							ifmapvalue[k]=spikeval;
-							$display("%m received ifm[%d][%d] = %b",i+3,k,spikeval);	
-						end
-							#mem_delay; // wait for them to arrive
-							nocval={wrapper_addr, PE3_addr, input_type, long_range_zeros, ifmapvalue};
-							toNOC.Send(nocval);
-							$display("%m toNOC send is %b in %t", nocval, $time);
-					end
-				end
-				else if(nocval[WIDTH_NOC-9:WIDTH_NOC-10]==out_type) begin
-						toMemWrite.Send(write_ofmaps);
-						//adder -> wrapper send only 1 for output spikes
-						toMemX.Send(nocval[WIDTH_NOC-31:WIDTH_NOC-32]);
-						toMemY.Send(nocval[WIDTH_NOC-33:0]);	
-						$display("%m addr1=%b,addr0=%b,current timestep=%d",nocval[WIDTH_NOC-31:WIDTH_NOC-32],nocval[WIDTH_NOC-33:0],t);
-						//toMemSendData.Send(1);
-				end
-			end // ofy
-		end // ofx
-		toMemT.Send(t);
-	end
-  end */
-  
+
   always begin
 	#200;
 	$display("%m working still...");
