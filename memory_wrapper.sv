@@ -104,34 +104,42 @@ parameter DONE=4'b1111;
 		end // ifx
 	$display("%m received all ifmaps for timestep t = %d at time = %d",t,$time);
 	
-		//read old membrane potential
-		for (int i = 0; i < ofx; i++) begin
-			for (int j = 0; j < ofy; j++) begin				
-				if(t>=2) begin
-					toMemRead.Send(read_mempots);
-					toMemX.Send(i);
-					toMemY.Send(j);
-					fromMemGetData.Receive(byteval);
-					case(j)
-						0: nocval={wrapper_addr, adder1_addr,mem_type, short_range_zeros, byteval};
-						1: nocval={wrapper_addr, adder2_addr,mem_type, short_range_zeros, byteval};
-						2: nocval={wrapper_addr, adder3_addr,mem_type, short_range_zeros, byteval};
-					endcase
-					toNOC.Send(nocval);
-					$display("%m toNOC send oldmem_p is %b in %t", nocval, $time);
-				end
-				else begin
-					break;
-				end
-			end // ofy
-		end // ofx
 		
-		//send membrane potential and output spikes
 		for (int i = 0; i < ofx; i++) begin
 			for (int j = 0; j < ofy; j++) begin
+			//read old membrane potential
+				if(t>=2) begin
+					if((i==0)) begin
+						toMemRead.Send(read_mempots);
+						toMemX.Send(i);
+						toMemY.Send(j);
+						fromMemGetData.Receive(byteval);
+						case(j)
+							0: nocval={wrapper_addr, adder1_addr,mem_type, short_range_zeros, byteval};
+							1: nocval={wrapper_addr, adder2_addr,mem_type, short_range_zeros, byteval};
+							2: nocval={wrapper_addr, adder3_addr,mem_type, short_range_zeros, byteval};
+						endcase
+						toNOC.Send(nocval);
+						$display("%m toNOC send oldmem_p is %b in %t", nocval, $time);
+					end
+				end
+			//send membrane potential and output spikes
 				fromNOC.Receive(nocval);						
 				$display("%m receive value is %b in %t", nocval, $time);
-				if((nocval[WIDTH_NOC-9:WIDTH_NOC-10]==out_type) & (nocval[WIDTH_NOC-31:0]==DONE)) begin				
+				if((nocval[WIDTH_NOC-9:WIDTH_NOC-10]==out_type) & (nocval[WIDTH_NOC-31:0]==DONE)) begin	
+					if(t>=2) begin
+							toMemRead.Send(read_mempots);
+							toMemX.Send(i);
+							toMemY.Send(j);
+							fromMemGetData.Receive(byteval);
+							case(j)
+								0: nocval={wrapper_addr, adder1_addr,mem_type, short_range_zeros, byteval};
+								1: nocval={wrapper_addr, adder2_addr,mem_type, short_range_zeros, byteval};
+								2: nocval={wrapper_addr, adder3_addr,mem_type, short_range_zeros, byteval};
+							endcase
+							toNOC.Send(nocval);
+							$display("%m toNOC send oldmem_p is %b in %t", nocval, $time);
+					end
 					$display("%m  Done received");
 					if(i<3) begin
 						for(int k=0; k< ify; k++) begin
