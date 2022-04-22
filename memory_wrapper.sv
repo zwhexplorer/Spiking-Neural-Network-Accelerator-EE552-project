@@ -29,6 +29,7 @@ parameter DONE=4'b1111;
   int read_mempots = 0;
   int write_ofmaps = 1;
   int write_mempots = 0;
+  int flag=0;
   logic [WIDTH-1:0] byteval;
   logic [WIDTH-1:0] by1, by2, by3;
   logic [WIDTH_NOC-1:0] nocval;
@@ -106,7 +107,6 @@ parameter DONE=4'b1111;
 	
 		
 		for (int i = 0; i < ofx; i++) begin
-			for (int j = 0; j < ofy; j++) begin
 			//read old membrane potential
 				if(t>=2 & i==0) begin
 					for(int k=0; k< ofy; k++) begin
@@ -123,11 +123,12 @@ parameter DONE=4'b1111;
 						$display("%m toNOC send oldmem_p is %b in %t", nocval, $time);
 					end
 				end
+			for (int j = 0; j < ofy; j++) begin	
 			//send membrane potential and output spikes
 				fromNOC.Receive(nocval);						
 				$display("%m receive value is %b in %t", nocval, $time);
 				if((nocval[WIDTH_NOC-9:WIDTH_NOC-10]==out_type) & (nocval[WIDTH_NOC-31:0]==DONE)) begin	
-					if(t>=2) begin
+					if(t>=2 & i>=1) begin
 						for(int k=0; k< ofy; k++) begin
 							toMemRead.Send(read_mempots);
 							toMemX.Send(i);
@@ -142,8 +143,9 @@ parameter DONE=4'b1111;
 							$display("%m toNOC send oldmem_p is %b in %t", nocval, $time);
 						end
 					end
+					flag+=1;
 					$display("%m  Done received");
-					if(i<3) begin
+					if(i<3 & flag<=2) begin
 						for(int k=0; k< ify; k++) begin
 							toMemRead.Send(read_ifmaps);
 							toMemX.Send(i+2);
@@ -156,6 +158,9 @@ parameter DONE=4'b1111;
 							nocval={wrapper_addr, PE3_addr, input_type, long_range_zeros, ifmapvalue};
 							toNOC.Send(nocval);
 							$display("%m toNOC send is %b in %t", nocval, $time);
+					end
+					if(flag==3) begin
+						flag=0;
 					end
 					j=j-1;
 				end
