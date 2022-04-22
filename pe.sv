@@ -17,7 +17,7 @@ module depacketizer_PE(interface packet, out_filter, out_ifmap, addr_out);
 	
 	always begin
 		packet.Receive(value);
-		$display("receive value=%b, Simulation time =%t",value, $time);
+		$display("%m receive value=%b, Simulation time =%t",value, $time);
 		#FL;
 		if(value[WIDTH-9:WIDTH-10]==input_type)
 			begin
@@ -48,6 +48,7 @@ parameter BL=1;
 logic sendvalue;
 logic [range:0] i=0, j=0;
 logic [WIDTH-1:0] ifmap_value; 
+logic [WIDTH-1:0] ifmap_value_old; 
 int flag=0;
 //logic [range-1:0] to_filter_val;
 
@@ -57,7 +58,7 @@ always begin
 	flag+=1;
 	#FL;
 	if(flag>=2) begin
-		to_packet.Send(ifmap_value);
+		to_packet.Send(ifmap_value_old);
 		if(flag==3) begin
 			flag=0;
 		end
@@ -77,6 +78,7 @@ always begin
 		ifmap_count.Send(j);
 		#BL;
 	end
+	ifmap_value_old=ifmap_value;
 end
 endmodule
 
