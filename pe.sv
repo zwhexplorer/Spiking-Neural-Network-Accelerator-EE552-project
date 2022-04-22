@@ -56,6 +56,12 @@ always begin
 	$display("receive ifmap_value=%b",ifmap_value);
 	flag+=1;
 	#FL;
+	if(flag>=2) begin
+		to_packet.Send(ifmap_value);
+		if(flag==3) begin
+			flag=0;
+		end
+	end		
 	//to_filter_val=new_input;
 	//to_filter.Send(to_filter_val);
 	//#BL;
@@ -69,16 +75,11 @@ always begin
 		#BL;
 		end
 		ifmap_count.Send(j);
-		if(j==range & flag>=2) begin
-			to_packet.Send(ifmap_value);
-			if(flag==3) begin
-				flag=0;
-			end
-		end		
 		#BL;
 	end
 end
 endmodule
+
 
 module filter_mem (interface filter_in, count_out, filter_out);
 parameter WIDTH=24;
@@ -265,11 +266,11 @@ module packetizer_PE(interface result, ifmap_in, ifmap_count, addr_in, packet);
 endmodule
 
 module pe(interface packet_in, packet_out);
-	 Channel #(.hsProtocol(P4PhaseBD), .WIDTH(34)) intf  [14:1] (); 
+	 Channel #(.hsProtocol(P4PhaseBD), .WIDTH(34)) intf  [13:1] (); 
 	 
 	 depacketizer_PE #(.FL(2), .BL(1)) dpkt(.packet(packet_in), .out_filter(intf[1]), .out_ifmap(intf[2]), .addr_out(intf[3]));
-	 filter_mem #(.FL(2),.BL(1)) FM (.filter_in(intf[1]),.count_out(intf[4]),.filter_out(intf[5]), .from_ifmap(intf[14]));
-	 ifmap_mem #(.FL(2),.BL(1)) IM (.ifmap_in(intf[2]), .ifmap_out(intf[6]), .to_packet(intf[7]), .ifmap_count(intf[13]), .to_filter(intf[14]));
+	 filter_mem #(.FL(2),.BL(1)) FM (.filter_in(intf[1]),.count_out(intf[4]),.filter_out(intf[5]));
+	 ifmap_mem #(.FL(2),.BL(1)) IM (.ifmap_in(intf[2]), .ifmap_out(intf[6]), .to_packet(intf[7]), .ifmap_count(intf[13]));
 	 Multiplier #(.FL(2), .BL(1)) mul(.filter_in(intf[5]), .ifmap_in(intf[6]), .multi_out(intf[8]));
 	 adder 	    #(.FL(2), .BL(1)) add(.a0(intf[8]), .b0(intf[9]), .sum(intf[10]));
 	 split      #(.FL(2), .BL(1)) spl(.inPort(intf[10]), .count_sel(intf[4]), .acc_out(intf[11]), .pkt_out(intf[12]));
