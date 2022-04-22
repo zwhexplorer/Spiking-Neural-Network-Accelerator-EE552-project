@@ -145,14 +145,14 @@ parameter DONE=4'b1111;
 					end
 					flag+=1;
 					$display("%m  Done received");
-					if(i<3 & flag<=2) begin
+					if(flag<=2) begin
 						for(int k=0; k< ify; k++) begin
 							toMemRead.Send(read_ifmaps);
-							toMemX.Send(i+2);
+							toMemX.Send(flag+2);
 							toMemY.Send(k);
 							fromMemGetData.Receive(spikeval);
 							ifmapvalue[k]=spikeval;
-							$display("%m received ifm[%d][%d] = %b",i+2,k,spikeval);	
+							$display("%m received ifm[%d][%d] = %b",flag+2,k,spikeval);	
 						end
 							#mem_delay; // wait for them to arrive
 							nocval={wrapper_addr, PE3_addr, input_type, long_range_zeros, ifmapvalue};
