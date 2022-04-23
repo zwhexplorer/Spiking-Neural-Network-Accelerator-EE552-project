@@ -105,8 +105,7 @@ parameter DONE=4'b1111;
 		end // ifx
 	$display("%m received all ifmaps for timestep t = %d at time = %d",t,$time);
 	
-		
-		for (int i = 0; i < ofx; i++) begin
+		for (int i = 0; i < ofx ; i++) begin
 			//read old membrane potential
 				if(t>=2 & i==0) begin
 					for(int k=0; k< ofy; k++) begin
@@ -162,7 +161,9 @@ parameter DONE=4'b1111;
 					if(flag==3) begin
 						flag=0;
 					end
-					j=j-1;
+					else begin
+						j=j-1;
+					end
 				end
 				else begin
 					if(nocval[WIDTH_NOC-9:WIDTH_NOC-10]==mem_type) begin
@@ -171,6 +172,9 @@ parameter DONE=4'b1111;
 						toMemY.Send(j);
 						toMemSendData.Send(nocval[WIDTH_NOC-27:0]);
 						$display("%m i=%d,j=%d,mem_p=%d,current timestep=%d",i,j,nocval[WIDTH_NOC-27:0],t);
+						if(i==2 & j==2 & flag==2) begin
+							j=j-1;
+						end
 					end
 					else if(nocval[WIDTH_NOC-9:WIDTH_NOC-10]==out_type) begin
 						toMemWrite.Send(write_ofmaps);
@@ -179,7 +183,9 @@ parameter DONE=4'b1111;
 						toMemY.Send(nocval[WIDTH_NOC-33:0]);	
 						$display("%m addr1=%b,addr0=%b,current timestep=%d",nocval[WIDTH_NOC-31:WIDTH_NOC-32],nocval[WIDTH_NOC-33:0],t);
 						//toMemSendData.Send(1);
-						j=j-1;
+						if(i!=2 & j!=2) begin
+							j=j-1;
+						end
 					end
 				end
 			end // ofy
