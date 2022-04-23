@@ -127,7 +127,7 @@ parameter DONE=4'b1111;
 				fromNOC.Receive(nocval);						
 				$display("%m receive value is %b in %t", nocval, $time);
 				if((nocval[WIDTH_NOC-9:WIDTH_NOC-10]==out_type) & (nocval[WIDTH_NOC-31:0]==DONE)) begin	
-					if(t>=2 & i>=1) begin
+					if(t>=2 & i>=1 & flag<3) begin
 						for(int k=0; k< ofy; k++) begin
 							toMemRead.Send(read_mempots);
 							toMemX.Send(i);
@@ -183,9 +183,9 @@ parameter DONE=4'b1111;
 						toMemY.Send(nocval[WIDTH_NOC-33:0]);	
 						$display("%m addr1=%b,addr0=%b,current timestep=%d",nocval[WIDTH_NOC-31:WIDTH_NOC-32],nocval[WIDTH_NOC-33:0],t);
 						//toMemSendData.Send(1);
-						if(i!=2 & j!=2) begin
+						//if(i!=2 & j!=2) begin
 							j=j-1;
-						end
+						//end
 					end
 				end
 			end // ofy
