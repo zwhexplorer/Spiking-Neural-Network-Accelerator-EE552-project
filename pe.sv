@@ -19,29 +19,28 @@ module depacketizer_PE(interface packet, out_filter, out_ifmap, addr_out);
 		packet.Receive(value);
 		$display("%m receive value=%b, Simulation time =%t",value, $time);
 		#FL;
-		if(value[WIDTH-9:WIDTH-10]==input_type)
+		if(value[WIDTH-9:WIDTH-10]==input_type)//send one row of input spikes to ifmap_mem;
 			begin
 				mapvalue = value[WIDTH-30:0];
 				out_ifmap.Send(mapvalue);
-				$display("send mapvalue=%b, Simulation time =%t",mapvalue, $time);
+//				$display("send mapvalue=%b, Simulation time =%t",mapvalue, $time);
 			end
 			else if(value[WIDTH-9:WIDTH-10]==kernel_type)
 			begin
-				filvalue = value[WIDTH-11:0];
+				filvalue = value[WIDTH-11:0];//send one row of kernel to filter_mem;
 				out_filter.Send(filvalue);
-				$display("send filvalue=%b, Simulation time =%t",filvalue, $time);
+//				$display("send filvalue=%b, Simulation time =%t",filvalue, $time);
 			end
 		#BL;
-		addr_value=value[WIDTH-5:WIDTH-8];
+		addr_value=value[WIDTH-5:WIDTH-8];//send PE address to packetizer;
 		addr_out.Send(addr_value);
-		$display("send addr_value=%b, Simulation time =%t",addr_value, $time);
+//		$display("send addr_value=%b, Simulation time =%t",addr_value, $time);
 		#BL;
 	end
 endmodule
 
 module ifmap_mem (interface ifmap_in, ifmap_out, to_packet, ifmap_count);
 parameter WIDTH=5;
-//parameter new_input = 2'b11;
 parameter range=2;
 parameter FL=2;
 parameter BL=1;
@@ -50,32 +49,28 @@ logic [range:0] i=0, j=0;
 logic [WIDTH-1:0] ifmap_value; 
 logic [WIDTH-1:0] ifmap_value_old; 
 int flag=0;
-//logic [range-1:0] to_filter_val;
 
 always begin
 	ifmap_in.Receive(ifmap_value);
-	$display("receive ifmap_value=%b",ifmap_value);
-	flag+=1;
+//	$display("receive ifmap_value=%b",ifmap_value);
+	flag+=1;//mark how many times ifmap_mem receive ifmap_value;
 	#FL;
-	if(flag>=2) begin
+	if(flag>=2) begin // if ifmap_mem receive more than 1 value, then send old value to packetizer;
 		to_packet.Send(ifmap_value_old);
-		if(flag==3) begin
-			flag=0;
+		if(flag==3) begin//when mark 3 times, it have sent 2 row to each other PE, which means it complete 1 timestep;
+			flag=0;//reset flag;
 		end
-	end		
-	//to_filter_val=new_input;
-	//to_filter.Send(to_filter_val);
-	//#BL;
+	end	
 	for(j=0;j<=range;j++)
 	begin
 		for(i=j;i<=j+range;i++)
 		begin
 		sendvalue=ifmap_value[i];
-		ifmap_out.Send(sendvalue);	
-		$display("send ifmap_value=%b, Simulation time =%t",sendvalue, $time);
+		ifmap_out.Send(sendvalue);//send each ifmap_value to multiplier;	
+//		$display("send ifmap_value=%b, Simulation time =%t",sendvalue, $time);
 		#BL;
 		end
-		ifmap_count.Send(j);
+		ifmap_count.Send(j);//send times of calculation to packetizer;
 		#BL;
 	end
 	ifmap_value_old=ifmap_value;
@@ -87,40 +82,32 @@ module filter_mem (interface filter_in, count_out, filter_out);
 parameter WIDTH=24;
 parameter WIDTH_UNIT=8;
 parameter True=1;
-//parameter new_input=2'b11, old_input=2'b00;
 parameter range=2;
 parameter FL=2;
 parameter BL=1;
 logic [WIDTH_UNIT-1:0] sendvalue;
 logic [WIDTH-1:0] filter_value;
 logic [range:0] i=0, j=0;
-//logic [range-1:0] from_ifmap_val;
 
-/*always begin
-	filter_in.Receive(filter_value);
-	$display("receive filter_value=%b",filter_value);	
-end*/
 always begin
 	filter_in.Receive(filter_value);
-	$display("receive filter_value=%b",filter_value);	
-	//from_ifmap.Receive(from_ifmap_val);
+//	$display("receive filter_value=%b",filter_value);	
 	#FL;
-	while(True) begin
+	while(True) begin//continue send filter value to match several ifmap value;
 		for(j=0;j<=range;j++) begin
 			for(i=0;i<=range;i++) begin
 				if(i==0)
-					sendvalue=filter_value[WIDTH_UNIT-1:0];
+					sendvalue=filter_value[WIDTH_UNIT-1:0];//send first value [7:0];
 				else if(i==1)
-					sendvalue=filter_value[WIDTH_UNIT+7:WIDTH_UNIT];
+					sendvalue=filter_value[WIDTH_UNIT+7:WIDTH_UNIT];//send second value [15:8];
 				else
-					sendvalue=filter_value[WIDTH_UNIT+15:WIDTH_UNIT+8];
-				count_out.Send(i);
+					sendvalue=filter_value[WIDTH_UNIT+15:WIDTH_UNIT+8];//send third value [23:16];
+				count_out.Send(i);//send times of loop;
 				filter_out.Send(sendvalue);
-				$display("filter_send value %b, Simulation time =%t",sendvalue,$time);
+//				$display("filter_send value %b, Simulation time =%t",sendvalue,$time);
 				#BL;
 			end
 		end
-		//from_ifmap_val=old_input;
 	end
 end
 endmodule
@@ -135,12 +122,12 @@ logic [WIDTH-1:0] multi_out_value;
 
 always begin
 	fork
-	filter_in.Receive(filter_value);
-	ifmap_in.Receive(ifmap_value);
+	filter_in.Receive(filter_value);//receive value from filter;
+	ifmap_in.Receive(ifmap_value);//receive value from ifmap;
 	join
 	#FL;
 	multi_out_value=filter_value*ifmap_value;
-	$display("multi_out_value = %b ", multi_out_value);
+//	$display("multi_out_value = %b ", multi_out_value);
 	multi_out.Send(multi_out_value);
 	#BL;
 	end
@@ -153,14 +140,14 @@ module adder(interface a0, b0, sum);
 	logic [WIDTH-1:0] a=0,b=0,s=0;
 	
 	always begin
-		b0.Receive(b);
+		b0.Receive(b);//receive accumulator result;
 		#FL;
 	end
 	always begin
-		a0.Receive(a);	
+		a0.Receive(a);//receive multiplier result;
 		#FL;	
 		s=a+b;
-		$display("SumValue_S =%d. time is %t", s, $time);
+//		$display("SumValue_S =%d. time is %t", s, $time);
 		sum.Send(s);
 		#BL;										
 	end
@@ -178,18 +165,18 @@ module split (interface inPort,count_sel, acc_out, pkt_out);
 		count_sel.Receive(count);
 		if(count!=range)
 		begin
-			inPort.Receive(A);
+			inPort.Receive(A);//receive value from adder;
 			#FL;		
-			acc_out.Send(A);
+			acc_out.Send(A);//send value to accumulator;
 			#BL;
 		end
-		else
+		else//when count equal to 2, ono convoluted caculation is completed;
 		begin
-			inPort.Receive(A);
+			inPort.Receive(A);//receive value from adder;
 			#FL;
-			pkt_out.Send(A);
-			$display("sum_out%d at %t",A, $time);
-			acc_out.Send(0);
+			pkt_out.Send(A);//send result to packetizer;
+//			$display("sum_out%d at %t",A, $time);
+			acc_out.Send(0);//reset accumulator;
 			#BL;
 		end
 	end
@@ -202,15 +189,15 @@ module accumulator(interface I, O);
   logic [WIDTH-1:0] token=0;
   
   initial begin
-  	O.Send(0);
+  	O.Send(0);//send 0 at first;
 	$display("send accumulated value 0 at %t", $time);
 	#BL;
   end
   always begin
-	I.Receive(token);
+	I.Receive(token);//receive value from split;
 	#FL;
-	O.Send(token);
-	$display("send accumulated value = %d", token);
+	O.Send(token);//send value to adder;
+//	$display("send accumulated value = %d", token);
 	#BL;
   end
 endmodule
@@ -231,12 +218,12 @@ module packetizer_PE(interface result, ifmap_in, ifmap_count, addr_in, packet);
 	logic [WIDTH_ifmap-1:0] mapvalue;
 	logic [WIDTH_addr-1:0] addr_value;
 
-	always	addr_in.Receive(addr_value);  
+	always	addr_in.Receive(addr_value);//receive PE address from depacketizer;
 	always begin
 		$display("Start module %m and time is %t", $time);	
 		fork
-		result.Receive(result_value);
-		ifmap_count.Receive(i);
+		result.Receive(result_value);//receive result from split;
+		ifmap_count.Receive(i);//receive times of calculation from ifmap_mem;
 		join
 		#FL;
 		case(i)
@@ -249,7 +236,7 @@ module packetizer_PE(interface result, ifmap_in, ifmap_count, addr_in, packet);
 		#BL;
 	end
 	always begin
-	ifmap_in.Receive(mapvalue);
+	ifmap_in.Receive(mapvalue);//receive old ifmap value;
 	#FL;
 	if(addr_value==PE2_addr)
 		begin
@@ -263,7 +250,7 @@ module packetizer_PE(interface result, ifmap_in, ifmap_count, addr_in, packet);
 			packet.Send(packet_value);
 			#BL;
 		end
-	$display("In module %m, packet_value is %b", packet_value);
+	$display("In module %m, local shared packet_value is %b", packet_value);
 	end
 endmodule
 
