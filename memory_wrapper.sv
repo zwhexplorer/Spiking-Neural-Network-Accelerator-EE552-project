@@ -127,7 +127,7 @@ parameter DONE=4'b1111;
 				fromNOC.Receive(nocval);						
 				$display("%m receive value is %b in %t", nocval, $time);
 				if((nocval[WIDTH_NOC-9:WIDTH_NOC-10]==out_type) & (nocval[WIDTH_NOC-31:0]==DONE)) begin	
-					flag+=1;
+									flag+=1;
 					if(t>=2 & i>=1 & flag<3) begin
 						for(int k=0; k< ofy; k++) begin
 							toMemRead.Send(read_mempots);
@@ -143,6 +143,7 @@ parameter DONE=4'b1111;
 							$display("%m toNOC send oldmem_p is %b in %t", nocval, $time);
 						end
 					end
+
 					$display("%m  Done received");
 					if(flag<=2) begin
 						for(int k=0; k< ify; k++) begin

@@ -1,21 +1,18 @@
 //unfinished
 `timescale 1ns/100ps
 import SystemVerilogCSP::*;
-module Partial_sum_adder (
-			interface in,
-			interface out
-				);
+module Partial_sum_adder (interface in,out);
 parameter adder_number=2'b00; //00--adder1,01--adder2,10--adder3
 parameter adder3_num=2'b10;
 parameter WIDTH=34;
 parameter memb_p_WIDTH=8;
-parameter threshold=64;
-parameter PE1_addr=4'b1000;
-parameter PE2_addr=4'b1001;
+parameter threshold=16;
+parameter PE1_addr=4'b0010;
+parameter PE2_addr=4'b0110;
 parameter PE3_addr=4'b1010;
 parameter Adder_addr=4'b0110;
 parameter Mem_addr=4'b0000;
-parameter WR_addr=4'b0001;
+parameter WR_addr=4'b0000;
 parameter Out_to_Mem_zeros={20{1'b0}};
 parameter MP_to_Mem_zeros={16{1'b0}};
 parameter count_number=2'b10;
@@ -23,7 +20,7 @@ parameter done_singal=4'b1111;
 parameter mem_p_type=2'b10;
 parameter output_spike_type=2'b11;
 logic [WIDTH-1:0] value;
-logic [memb_p_WIDTH-1:0] partial_PE1,partial_PE2,partial_PE3,membrane_potential;
+reg [memb_p_WIDTH-1:0] partial_PE1,partial_PE2,partial_PE3,membrane_potential;
 logic output_spike;
 logic [WIDTH-1:0] out_packet;
 logic [3:0]output_spike_addr;
@@ -68,6 +65,7 @@ begin
 		begin
 			partial_PE1=value[7:0];
 			//flag_PE1_received=1;//count=count+1;
+			$display("firstRe---if--partial_PE1=%b",partial_PE1);
 		end
 	
 	if (value[WIDTH-1:WIDTH-4]==PE2_addr) //src_addr=PE2
@@ -85,6 +83,7 @@ begin
 			begin
 				membrane_potential=value[WIDTH-27:WIDTH-34];
 			end
+	$display("%m first receive----packet:%b",value);
 	
 		
 	//second receive
@@ -93,6 +92,7 @@ begin
 		begin
 			partial_PE1=value[7:0];
 			//flag_PE1_received=1;//count=count+1;
+			//$display("secondRe---if--partial_PE1=%b",partial_PE1);
 		end
 	
 	if (value[WIDTH-1:WIDTH-4]==PE2_addr) //PE2
@@ -110,12 +110,14 @@ begin
 			begin
 				membrane_potential=value[WIDTH-27:WIDTH-34];
 			end
+	$display("%m second receive----packet:%b",value);
 	
 	//third receive
 	in.Receive(value);//PE3
 	if (value[WIDTH-1:WIDTH-4]==PE1_addr) //src_addr=PE1_addr
 		begin
 			partial_PE1=value[7:0];
+			//$display("thirdRe---if--partial_PE1=%b",partial_PE1);
 			//flag_PE1_received=1;//count=count+1;
 		end
 	
@@ -135,6 +137,7 @@ begin
 			begin
 				membrane_potential=value[WIDTH-27:WIDTH-34];
 			end
+	$display("%m third receive----packet:%b",value);
 //-----------------------------------------------------------------------------------------------
 
 				
@@ -146,6 +149,7 @@ begin
 						if (value[WIDTH-1:WIDTH-4]==PE1_addr) //src_addr=PE1_addr
 							begin
 								partial_PE1=value[7:0];
+								//$display("forthRe---if--partial_PE1=%b",partial_PE1);
 								//flag_PE1_received=1;//count=count+1;
 							end
 	
@@ -163,18 +167,23 @@ begin
 						if(value[WIDTH-1:WIDTH-4]==WR_addr)//src addr=WR_addr
 							if(value[WIDTH-9:WIDTH-10]==mem_p_type)//type=mem_p_type
 								begin
-									membrane_potential=value[WIDTH-27:WIDTH-34];
+									membrane_potential=value[WIDTH-27:WIDTH-34];//34-27=7:0
 								end
+					$display("partial_PE1:%b---partial_PE2:%b---partial_PE3:%b---mem_p:%b",partial_PE1,partial_PE2,partial_PE3,membrane_potential);
 					membrane_potential=partial_PE1+partial_PE2+partial_PE3+membrane_potential;
-					end						
+					//$display("partial_PE1:%b---partial_PE2:%b---partial_PE3:%b---mem_p:%b",partial_PE1,partial_PE2,partial_PE3,membrane_potential);
+					$display("%m forth receive----packet:%b",value);
+					end	
+					
 						
 				else //first input map
 					begin
 						membrane_potential=partial_PE1+partial_PE2+partial_PE3;
+						$display("partial_PE1:%b---partial_PE2:%b---partial_PE3:%b---",partial_PE1,partial_PE2,partial_PE3);
 					end
 					
 						//generate output_spike 1-bit
-				if (membrane_potential>threshold)
+				if (membrane_potential>=threshold)
 					begin
 						output_spike=1;
 						membrane_potential=membrane_potential-threshold;
@@ -184,25 +193,27 @@ begin
 						output_spike=0;
 					end
 			
-				
+				//$display("partial_PE1:%b---partial_PE2:%b---partial_PE3:%b---",partial_PE1,partial_PE2,partial_PE3);
 				out_packet={Adder_addr,Mem_addr,mem_p_type,MP_to_Mem_zeros,membrane_potential};
-				$display("Membrane_P after compare%b",out_packet);
+				$display("add_num:%m---Membrane_P after compare%b",out_packet);
 				//4+4+2+16*zeros+8bits
 				//mem_p_type=10
 				out.Send(out_packet);	
 				if (output_spike==1)
 					begin
-						output_spike_addr={adder_number,count};//row-col
+						output_spike_addr={count,adder_number};//row-col
 						out_packet={Adder_addr,Mem_addr,output_spike_type,Out_to_Mem_zeros,output_spike_addr};//4+4+22+4
 						//output_spike_type=10
-						$display("output_spike no_zero_send:%b",out_packet);
+						$display("add_num:%m---output_spike no_zero_send:%b,row:%b---col:%b",out_packet,count,adder_number);
 						out.Send(out_packet);
 					end
 				if (adder_number==adder3_num)//every time when adder3 finish calculating, send done_singal
 					begin
-						output_spike_addr=done_singal;
-						out_packet={Adder_addr,Mem_addr,output_spike_type,Out_to_Mem_zeros,output_spike_addr};
+						//output_spike_addr=done_singal;
+						//out_packet={Adder_addr,Mem_addr,output_spike_type,Out_to_Mem_zeros,output_spike_addr};
+						out_packet={Adder_addr,Mem_addr,output_spike_type,Out_to_Mem_zeros,done_singal};
 						out.Send(out_packet);//send done_singal
+						$display("add_num:%m---Done signal Sent!!!");
 					end
 				/***if (count==count_number)//count=2'b10
 					begin

@@ -56,7 +56,8 @@ module memory(interface read, write, T, x, y, data_out, data_in);
   initial begin 
 
 	// Load golden mem 			  
-	  $readmemb("base_output_bin.mem", pre_golden_memory);	 	  
+	  $readmemb("sparse_output_bin.mem", pre_golden_memory);
+	  //$readmemb("base_output_bin.mem", pre_golden_memory);	 	  
 	  for (ofi = 0; ofi < OF_ROWS; ofi++) begin
 		for (ofj = 0; ofj < OF_COLS; ofj++) begin
 			index = OF_COLS * ofi + ofj;		
@@ -67,8 +68,9 @@ module memory(interface read, write, T, x, y, data_out, data_in);
 	  end // fi for	 
 
 	
-	// Load filters 			  
-	  $readmemh("base_kernel_hex.mem", pre_filt_memory);	 
+	// Load filters 	
+	  $readmemh("sparse_kernel_hex.mem", pre_filt_memory);
+	  //$readmemh("base_kernel_hex.mem", pre_filt_memory);	 
 	  
 	  for (fi = 0; fi < F_ROWS; fi++) begin
 		for (fj = 0; fj < F_COLS; fj++) begin
@@ -80,8 +82,8 @@ module memory(interface read, write, T, x, y, data_out, data_in);
 	  end // fi for	 
 	  
 	  // Load spikes 
-	  $readmemb("base_ifmaps_bin.mem", pre_ifmaps_mem);
-	  
+	 // $readmemb("base_ifmaps_bin.mem", pre_ifmaps_mem);
+	  $readmemb("sparse_ifmaps_bin.mem", pre_ifmaps_mem);
 	  for (ift = 0; ift < timesteps;++ift) begin 
 		  for (ifi = 0; ifi < IF_ROWS;++ifi) begin 
 			  for (ifj = 0; ifj < IF_COLS;++ifj) begin 
@@ -185,7 +187,63 @@ module memory(interface read, write, T, x, y, data_out, data_in);
 			$display("%m Golden[%d][%d} = %b",golden_i,golden_j,golden_of_mem[golden_i][golden_j]);
 			$display("%m Your mem val = %b", of_mem[timesteps-1][golden_i][golden_j]);
 		end // golden_i
-	end // golden_i
+		end
+		
+		for (integer golden_i = 0; golden_i < OF_ROWS; golden_i++) begin
+		for (integer golden_j = 0; golden_j < OF_COLS; golden_j++) begin
+			$display("%m Your 1st mem val = %b", of_mem[0][golden_i][golden_j]);
+		end // golden_i
+		end
+		
+		for (integer golden_i = 0; golden_i < OF_ROWS; golden_i++) begin
+		for (integer golden_j = 0; golden_j < OF_COLS; golden_j++) begin
+			$display("%m Your 2nd mem val = %b", of_mem[1][golden_i][golden_j]);
+		end // golden_i
+		end
+		
+		for (integer golden_i = 0; golden_i < OF_ROWS; golden_i++) begin
+		for (integer golden_j = 0; golden_j < OF_COLS; golden_j++) begin
+			$display("%m Your 3rd mem val = %b", of_mem[2][golden_i][golden_j]);
+		end // golden_i
+		end
+		
+		for (integer golden_i = 0; golden_i < OF_ROWS; golden_i++) begin
+		for (integer golden_j = 0; golden_j < OF_COLS; golden_j++) begin
+			$display("%m Your 4th mem val = %b", of_mem[3][golden_i][golden_j]);
+		end // golden_i
+		end
+		
+		for (integer golden_i = 0; golden_i < OF_ROWS; golden_i++) begin
+		for (integer golden_j = 0; golden_j < OF_COLS; golden_j++) begin
+			$display("%m Your 5th mem val = %b", of_mem[4][golden_i][golden_j]);
+		end // golden_i
+		end
+		
+		for (integer golden_i = 0; golden_i < OF_ROWS; golden_i++) begin
+		for (integer golden_j = 0; golden_j < OF_COLS; golden_j++) begin
+			$display("%m Your 6th mem val = %b", of_mem[5][golden_i][golden_j]);
+		end // golden_i
+		end
+		
+		for (integer golden_i = 0; golden_i < OF_ROWS; golden_i++) begin
+		for (integer golden_j = 0; golden_j < OF_COLS; golden_j++) begin
+			$display("%m Your 7th mem val = %b", of_mem[6][golden_i][golden_j]);
+		end // golden_i		
+		end
+		
+		for (integer golden_i = 0; golden_i < OF_ROWS; golden_i++) begin
+		for (integer golden_j = 0; golden_j < OF_COLS; golden_j++) begin
+			$display("%m Your 8th mem val = %b", of_mem[7][golden_i][golden_j]);
+		end // golden_i	
+		end
+		
+		for (integer golden_i = 0; golden_i < OF_ROWS; golden_i++) begin
+		for (integer golden_j = 0; golden_j < OF_COLS; golden_j++) begin
+			$display("%m Your 9th mem val = %b", of_mem[8][golden_i][golden_j]);
+		end // golden_i	
+		end
+
+	// golden_i
 	#5;
 	$display("%m User reports completion");
 	$stop;
